@@ -1,6 +1,5 @@
 package com.theodore.aero.graphics;
 
-import com.theodore.aero.core.Debug;
 import com.theodore.aero.core.Util;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector3;
@@ -14,10 +13,10 @@ import java.util.ArrayList;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL32.*;
+import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
 public class GraphicsUtil {
 
@@ -221,7 +220,7 @@ public class GraphicsUtil {
             currentLocation = nextClosing;
         }
 
-        Debug.assertError(false, "Error: Shader is missing a closing brace!");
+        System.err.println("Error: Shader is missing a closing brace!");
 
         return -1;
     }
@@ -298,12 +297,8 @@ public class GraphicsUtil {
     private int createShader(String text, int type) {
         int shader = glCreateShader(type);
 
-        Debug.assertError(shader != 0, "Shader creation failed: Could not find valid memory location when adding shader");
-
         glShaderSource(shader, text);
         glCompileShader(shader);
-
-        Debug.assertError(glGetShaderi(shader, GL_COMPILE_STATUS) != 0, glGetShaderInfoLog(shader, 1024));
 
         checkShaderError(shader, GL_COMPILE_STATUS, false, "Error compiling shader type " + type);
 
@@ -321,8 +316,6 @@ public class GraphicsUtil {
             vertexShaderText = String_InsertCounter(vertexShaderText);
             vertexShaderText = vertexShaderText.replaceAll("varying", "out");
         }
-
-        Debug.println(vertexShaderText);
 
         return createShader(vertexShaderText, GL_VERTEX_SHADER);
     }
@@ -348,8 +341,6 @@ public class GraphicsUtil {
             fragmentShaderText = firstHalf + newFragout + secondHalf;
         }
 
-        Debug.println(fragmentShaderText);
-
         return createShader(fragmentShaderText, GL_FRAGMENT_SHADER);
     }
 
@@ -372,8 +363,6 @@ public class GraphicsUtil {
             return;
 
         int location = glGetUniformLocation(shaderProgram, uniformName);
-
-        Debug.assertError(location != 0xFFFFFFFF, "Could not find uniform: " + uniformName + " " + uniformType);
 
         result.add(new UniformData(location, uniformType, uniformName));
     }
@@ -407,7 +396,6 @@ public class GraphicsUtil {
                 String uniformName = uniformLine.substring(begin + 1);
                 String uniformType = uniformLine.substring(0, begin);
 
-                Debug.println("Adding Uniform: " + uniformName + "," + uniformType);
                 //AddUniform(uniformName, uniformType, shaderProgram, structs, result);
                 addUniform(uniformName, uniformType, shaderProgram, null, result);
             }

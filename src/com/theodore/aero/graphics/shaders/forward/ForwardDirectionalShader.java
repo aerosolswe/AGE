@@ -1,11 +1,13 @@
 package com.theodore.aero.graphics.shaders.forward;
 
-import com.theodore.aero.graphics.*;
-import com.theodore.aero.core.Aero;
+import com.theodore.aero.Components.BaseLight;
+import com.theodore.aero.Components.DirectionalLight;
 import com.theodore.aero.core.Transform;
+import com.theodore.aero.graphics.Graphics;
+import com.theodore.aero.graphics.Texture;
+import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.graphics.g3d.ShadowMap;
-import com.theodore.aero.graphics.g3d.lighting.BaseLight;
-import com.theodore.aero.graphics.g3d.lighting.DirectionalLight;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 
 public class ForwardDirectionalShader extends Shader {
@@ -55,10 +57,13 @@ public class ForwardDirectionalShader extends Shader {
         addUniform("directionalLight.direction");
     }
 
-    public void updateUniforms(Matrix4 worldMatrix, Matrix4 projectedMatrix, Material material) {
-        Graphics renderer = Aero.graphics;
-        Screen screen = Aero.getActiveScreen();
-        ShadowMap shadowMap = Aero.getActiveScreen().getActiveLight().getShadowMap();
+    @Override
+    public void updateUniforms(Transform transform, Material material, Graphics graphics) {
+        super.updateUniforms(transform, material, graphics);
+
+        Matrix4 worldMatrix = transform.getTransformation();
+        Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
+        ShadowMap shadowMap = graphics.getActiveLight().getShadowMap();
 
         shadowMap.shadowDepthTexture[0].bind(Texture.SHADOW_TEXTURE_0);
         shadowMap.shadowDepthTexture[1].bind(Texture.SHADOW_TEXTURE_1);
@@ -85,15 +90,15 @@ public class ForwardDirectionalShader extends Shader {
         setUniform("lightTransform2", shadowMap.lightMatrix[2]);
         setUniform("lightTransform3", shadowMap.lightMatrix[3]);
         setUniform("model", worldMatrix);
-        setUniform("MVP", projectedMatrix);
+        setUniform("MVP", MVPMatrix);
 
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
         setUniformf("scale", material.getHeightScale());
         setUniformf("bias", material.getHeightBias());
         setUniformi("textureRepeat", material.getTextureRepeat());
-        setUniform("eyePos", Transform.getCamera().getPosition());
-        setUniformf("shadowMapSize", renderer.getShadowSize());
+        setUniform("eyePos", graphics.getMainCamera().getTransform().getPosition());
+        setUniformf("shadowMapSize", graphics.getShadowSize());
 
         setUniformi("diffuse", Texture.DIFFUSE_TEXTURE);
         setUniformi("normalMap", Texture.NORMAL_TEXTURE);
@@ -103,7 +108,7 @@ public class ForwardDirectionalShader extends Shader {
         setUniformi("shadowMap2", Texture.SHADOW_TEXTURE_2);
         setUniformi("shadowMap3", Texture.SHADOW_TEXTURE_3);
 
-        setUniformDirectionalLight("directionalLight", (DirectionalLight) screen.getActiveLight());
+        setUniformDirectionalLight("directionalLight", (DirectionalLight) graphics.getActiveLight());
     }
 
     public void setUniformBaseLight(String uniformName, BaseLight baseLight) {

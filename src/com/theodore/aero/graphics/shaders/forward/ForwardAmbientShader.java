@@ -1,9 +1,11 @@
 package com.theodore.aero.graphics.shaders.forward;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.graphics.Material;
-import com.theodore.aero.graphics.Shader;
+import com.theodore.aero.core.Transform;
+import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Texture;
+import com.theodore.aero.graphics.g3d.Material;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 
 public class ForwardAmbientShader extends Shader {
@@ -34,6 +36,23 @@ public class ForwardAmbientShader extends Shader {
     }
 
     @Override
+    public void updateUniforms(Transform transform, Material material, Graphics graphics) {
+        super.updateUniforms(transform, material, graphics);
+
+        Matrix4 worldMatrix = transform.getTransformation();
+        Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
+
+        if (material.getDiffuseTexture() != null)
+            material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
+        else
+            Texture.unbind();
+
+        setUniform("MVP", MVPMatrix);
+        setUniformi("textureRepeat", material.getTextureRepeat());
+        setUniform("ambientIntensity", Aero.graphics.getAmbientLight());
+    }
+
+    /*@Override
     public void updateUniforms(Matrix4 worldMatrix, Matrix4 projectedMatrix, Material material) {
         if (material.getDiffuseTexture() != null)
             material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
@@ -43,5 +62,5 @@ public class ForwardAmbientShader extends Shader {
         setUniform("MVP", projectedMatrix);
         setUniformi("textureRepeat", material.getTextureRepeat());
         setUniform("ambientIntensity", Aero.graphics.getAmbientLight());
-    }
+    }*/
 }

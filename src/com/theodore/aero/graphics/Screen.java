@@ -1,17 +1,42 @@
 package com.theodore.aero.graphics;
 
-import com.theodore.aero.graphics.g2d.gui.Gui;
-import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.GameObject;
-import com.theodore.aero.graphics.g2d.Sprite;
-import com.theodore.aero.graphics.g3d.lighting.BaseLight;
-import com.theodore.aero.graphics.g3d.lighting.DirectionalLight;
 
-import java.util.ArrayList;
+public abstract class Screen {
 
-public abstract class Screen implements ScreenInterface {
+    private GameObject root;
 
-    public ArrayList<GameObject> gameObjects = new ArrayList<GameObject>();
+    public void init() {
+    }
+
+    public void input(float delta) {
+        getRootGameObject().inputAll(delta);
+    }
+
+    public void update(float delta) {
+        getRootGameObject().updateAll(delta);
+    }
+
+    public void render(Graphics graphics) {
+        graphics.fullRender(getRootGameObject());
+    }
+
+    public void addObject(GameObject object) {
+        getRootGameObject().addChild(object);
+    }
+
+    private GameObject getRootGameObject() {
+        if (root == null)
+            root = new GameObject();
+
+        return root;
+    }
+
+    public void setEngine() {
+        getRootGameObject().setEngine();
+    }
+
+    /*public ArrayList<GameObject> gameObjects = new ArrayList<GameObject>();
     public ArrayList<Sprite> sprites = new ArrayList<Sprite>();
     public ArrayList<DirectionalLight> directionalLights = new ArrayList<DirectionalLight>();
     public Gui gui = new Gui();
@@ -97,7 +122,6 @@ public abstract class Screen implements ScreenInterface {
 
     public void setActiveLight(BaseLight activeLight) {
         this.activeLight = activeLight;
-    }
-
+    }*/
 
 }

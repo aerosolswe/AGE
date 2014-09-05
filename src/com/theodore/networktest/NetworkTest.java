@@ -1,21 +1,16 @@
 package com.theodore.networktest;
 
-import com.theodore.aero.core.Aero;
 import com.theodore.aero.graphics.Screen;
-import com.theodore.aero.graphics.Window;
-import com.theodore.aero.graphics.g2d.gui.Label;
-import com.theodore.aero.graphics.g2d.gui.TextField;
-import com.theodore.networktest.screens.ClientScreen;
-import com.theodore.networktest.screens.ServerScreen;
 
 public class NetworkTest extends Screen {
+/*
 
     private Label connect;
     private Label host;
 
     private TextField ip;
 
-    public NetworkTest(){
+    public NetworkTest() {
         Aero.graphicsUtil.setClearColor(0.2f, 0.4f, 0.6f, 1);
 
         connect = new Label("connect", 50, Window.getHeight() / 2 - 100, 42, 42);
@@ -39,11 +34,11 @@ public class NetworkTest extends Screen {
 
     @Override
     public void input(float delta) {
-        if(connect.isClicked()){
+        if (connect.isClicked()) {
             setActiveScreen(new ClientScreen(ip.getText()));
         }
 
-        if(host.isClicked()){
+        if (host.isClicked()) {
             setActiveScreen(new ServerScreen());
         }
 
@@ -63,8 +58,9 @@ public class NetworkTest extends Screen {
 
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         new Aero(1280, 720, "Network test", 60, false, 16).start(new NetworkTest());
     }
+*/
 
 }

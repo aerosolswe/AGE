@@ -1,25 +1,16 @@
 package com.theodore.networktest.screens;
 
-import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
-import com.theodore.aero.core.Aero;
 import com.theodore.aero.graphics.Screen;
-import com.theodore.aero.graphics.g2d.gui.Label;
-import com.theodore.aero.network.GameClient;
-import com.theodore.networktest.GameWorld;
-
-import java.io.IOException;
 
 public class ClientScreen extends Screen {
-
+/*
     private GameClient gameClient;
 
     private GameWorld gameWorld;
 
     private Label fpsLabel;
 
-    public ClientScreen(String ipToConnect){
+    public ClientScreen(String ipToConnect) {
         gameClient = new GameClient();
         gameClient.register();
         gameClient.start(ipToConnect);
@@ -47,12 +38,12 @@ public class ClientScreen extends Screen {
             }
         });
 
-        if(gameClient.isConnected()){
+        if (gameClient.isConnected()) {
             gameWorld = new GameWorld(this);
 
             fpsLabel = new Label("fps " + 60, 50, 0);
 
-            gui.add(fpsLabel);
+//            gui.add(fpsLabel);
         }
     }
 
@@ -63,7 +54,7 @@ public class ClientScreen extends Screen {
 
     @Override
     public void input(float delta) {
-        if(gameWorld != null){
+        if (gameWorld != null) {
             gameWorld.input(delta);
         }
 
@@ -71,7 +62,7 @@ public class ClientScreen extends Screen {
 
     @Override
     public void update(float delta) {
-        if(gameWorld != null){
+        if (gameWorld != null) {
             gameWorld.update(delta);
             fpsLabel.setText("fps " + Aero.graphics.getFramesPerSeconds() + " ping: " + gameClient.getReturnTripTime());
         }
@@ -85,5 +76,5 @@ public class ClientScreen extends Screen {
     @Override
     public void dispose() {
         gameClient.close();
-    }
+    }*/
 }

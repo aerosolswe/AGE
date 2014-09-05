@@ -1,15 +1,12 @@
 package com.theodore.networktest.screens;
 
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
 import com.theodore.aero.graphics.Screen;
-import com.theodore.aero.network.GameServer;
 
 public class ServerScreen extends Screen {
-
+/*
     private GameServer gameServer;
 
-    public ServerScreen(){
+    public ServerScreen() {
         gameServer = new GameServer();
         gameServer.register();
         gameServer.start();
@@ -64,5 +61,5 @@ public class ServerScreen extends Screen {
     @Override
     public void dispose() {
         gameServer.close();
-    }
+    }*/
 }

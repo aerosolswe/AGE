@@ -1,7 +1,6 @@
 package com.theodore.aero.graphics.shaders;
 
-import com.theodore.aero.graphics.Material;
-import com.theodore.aero.graphics.Shader;
+import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.math.Matrix4;
 
 public class ShadowMapShader extends Shader {

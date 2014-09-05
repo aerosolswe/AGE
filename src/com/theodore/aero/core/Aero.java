@@ -1,6 +1,9 @@
 package com.theodore.aero.core;
 
-import com.theodore.aero.graphics.*;
+import com.theodore.aero.graphics.Graphics;
+import com.theodore.aero.graphics.GraphicsUtil;
+import com.theodore.aero.graphics.Screen;
+import com.theodore.aero.graphics.Window;
 import com.theodore.aero.input.Input;
 import com.theodore.aero.math.Time;
 import org.lwjgl.LWJGLException;
@@ -74,6 +77,7 @@ public class Aero {
             return;
 
         Aero.activeScreen = game;
+        Aero.activeScreen.setEngine();
         Aero.setActiveScreen(activeScreen);
 
         run();
@@ -88,6 +92,8 @@ public class Aero {
 
     private void run() {
         isRunning = true;
+
+        activeScreen.init();
 
         int frames = 0;
         double frameCounter = 0;
@@ -119,7 +125,7 @@ public class Aero {
                 input.update();
 
                 if (frameCounter >= 1.0) {
-                    graphics.setFramesPerSeconds(frames);
+                    graphics.setCurrentFps(frames);
                     frames = 0;
                     frameCounter = 0;
                 }
@@ -129,8 +135,8 @@ public class Aero {
             if (render) {
                 frames++;
                 graphicsUtil.clearColorAndDepth();
-                graphics.fullRender();
-                activeScreen.render();
+//                graphics.fullRender();
+                activeScreen.render(graphics);
                 Window.render();
             } else {
                 try {
@@ -146,7 +152,6 @@ public class Aero {
 
     private void cleanUp() {
         Window.dispose();
-        activeScreen.dispose();
     }
 
     public static void setIcon(String icon16, String icon32) {

@@ -1,14 +1,13 @@
 package com.theodore.aero.graphics.shaders.forward;
 
-import com.theodore.aero.core.Aero;
+import com.theodore.aero.Components.BaseLight;
+import com.theodore.aero.Components.PointLight;
+import com.theodore.aero.Components.SpotLight;
 import com.theodore.aero.core.Transform;
-import com.theodore.aero.graphics.Material;
-import com.theodore.aero.graphics.Screen;
-import com.theodore.aero.graphics.Shader;
+import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Texture;
-import com.theodore.aero.graphics.g3d.lighting.BaseLight;
-import com.theodore.aero.graphics.g3d.lighting.PointLight;
-import com.theodore.aero.graphics.g3d.lighting.SpotLight;
+import com.theodore.aero.graphics.g3d.Material;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 
 public class ForwardSpotShader extends Shader {
@@ -54,8 +53,11 @@ public class ForwardSpotShader extends Shader {
     }
 
     @Override
-    public void updateUniforms(Matrix4 worldMatrix, Matrix4 projectedMatrix, Material material) {
-        Screen screen = Aero.getActiveScreen();
+    public void updateUniforms(Transform transform, Material material, Graphics graphics) {
+        super.updateUniforms(transform, material, graphics);
+
+        Matrix4 worldMatrix = transform.getTransformation();
+        Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
 
         if (material.getNormalTexture() != null)
             material.getNormalTexture().bind(Texture.NORMAL_TEXTURE);
@@ -73,20 +75,20 @@ public class ForwardSpotShader extends Shader {
             Texture.unbind();
 
         setUniform("model", worldMatrix);
-        setUniform("MVP", projectedMatrix);
+        setUniform("MVP", MVPMatrix);
 
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
         setUniformf("scale", material.getHeightScale());
         setUniformf("bias", material.getHeightBias());
         setUniformi("textureRepeat", material.getTextureRepeat());
-        setUniform("eyePos", Transform.getCamera().getPosition());
+        setUniform("eyePos", graphics.getMainCamera().getTransform().getPosition());
 
         setUniformi("diffuse", Texture.DIFFUSE_TEXTURE);
         setUniformi("normalMap", Texture.NORMAL_TEXTURE);
         setUniformi("bumpMap", Texture.HEIGHT_TEXTURE);
 
-        setUniformSpotLight("spotLight", (SpotLight) screen.getActiveLight());
+        setUniformSpotLight("spotLight", (SpotLight) graphics.getActiveLight());
     }
 
     public void setUniformBaseLight(String uniformName, BaseLight baseLight) {
@@ -105,7 +107,7 @@ public class ForwardSpotShader extends Shader {
 
     public void setUniformSpotLight(String uniformName, SpotLight spotLight) {
         setUniformPointLight(uniformName + ".pointLight", spotLight);
-        setUniform(uniformName + ".direction", spotLight.getDirection().getForward());
+        setUniform(uniformName + ".direction", spotLight.getTransform().getRotation().getForward());
         setUniformf(uniformName + ".cutoff", spotLight.getCutoff());
     }
 }

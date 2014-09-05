@@ -1,7 +1,6 @@
 package com.theodore.aero.graphics.shaders;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.graphics.Shader;
 import com.theodore.aero.graphics.UniformData;
 
 import java.util.HashMap;

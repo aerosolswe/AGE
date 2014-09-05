@@ -1,5 +1,0 @@
-setDiffuse diffuse.png
-setNormal normal.png
-setBump bump.png
-setHeightScale 0.0f
-setHeightBias 0.0f

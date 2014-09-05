@@ -2,7 +2,6 @@ package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Util;
-import org.lwjgl.opengl.GL30;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -12,7 +11,7 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT16;
 
 public class Texture {
 

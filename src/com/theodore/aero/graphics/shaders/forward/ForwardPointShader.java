@@ -1,12 +1,12 @@
 package com.theodore.aero.graphics.shaders.forward;
 
-import com.theodore.aero.core.Aero;
+import com.theodore.aero.Components.BaseLight;
+import com.theodore.aero.Components.PointLight;
 import com.theodore.aero.core.Transform;
-import com.theodore.aero.graphics.Material;
-import com.theodore.aero.graphics.Screen;
-import com.theodore.aero.graphics.Shader;
+import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Texture;
-import com.theodore.aero.graphics.g3d.lighting.PointLight;
+import com.theodore.aero.graphics.g3d.Material;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 
 public class ForwardPointShader extends Shader {
@@ -55,9 +55,13 @@ public class ForwardPointShader extends Shader {
         addUniform("pointLight.range");
     }
 
+
     @Override
-    public void updateUniforms(Matrix4 worldMatrix, Matrix4 projectedMatrix, Material material) {
-        Screen screen = Aero.getActiveScreen();
+    public void updateUniforms(Transform transform, Material material, Graphics graphics) {
+        super.updateUniforms(transform, material, graphics);
+
+        Matrix4 worldMatrix = transform.getTransformation();
+        Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
 
         if (material.getNormalTexture() != null)
             material.getNormalTexture().bind(Texture.NORMAL_TEXTURE);
@@ -75,23 +79,23 @@ public class ForwardPointShader extends Shader {
             Texture.unbind();
 
         setUniform("model", worldMatrix);
-        setUniform("MVP", projectedMatrix);
+        setUniform("MVP", MVPMatrix);
 
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
         setUniformf("scale", material.getHeightScale());
         setUniformf("bias", material.getHeightBias());
         setUniformi("textureRepeat", material.getTextureRepeat());
-        setUniform("eyePos", Transform.getCamera().getPosition());
+        setUniform("eyePos", graphics.getMainCamera().getTransform().getPosition());
 
         setUniformi("diffuse", Texture.DIFFUSE_TEXTURE);
         setUniformi("normalMap", Texture.NORMAL_TEXTURE);
         setUniformi("bumpMap", Texture.HEIGHT_TEXTURE);
 
-        setUniformPointLight("pointLight", (PointLight) screen.getActiveLight());
+        setUniformPointLight("pointLight", (PointLight) graphics.getActiveLight());
     }
 
-    public void setUniformBaseLight(String uniformName, com.theodore.aero.graphics.g3d.lighting.BaseLight baseLight) {
+    public void setUniformBaseLight(String uniformName, BaseLight baseLight) {
         setUniform(uniformName + ".color", baseLight.getColor());
         setUniformf(uniformName + ".intensity", baseLight.getIntensity());
     }

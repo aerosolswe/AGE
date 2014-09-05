@@ -1,11 +1,11 @@
 package com.theodore.aero.graphics;
 
-import com.theodore.aero.core.Transform;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.PixelFormat;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -14,8 +14,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL30.GL_DRAW_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 public class Window {
 
@@ -32,23 +33,13 @@ public class Window {
         Display.setTitle(title);
         Keyboard.create();
         Mouse.create();
-        initRenderingComponents(fov);
         Window.sync((int) frameRate);
-    }
-
-    private static void initRenderingComponents(float fov) {
-        if (!Transform.isInitialized()) {
-            if (Transform.getCamera() == null)
-                Transform.setCamera(new Camera());
-            if (!Transform.isInitialized())
-                Transform.setProjection(fov, (float) Window.getWidth(), (float) Window.getHeight(), 0.1f, 1000f);
-        }
     }
 
     public static void update() {
         if (isResized()) {
             glViewport(0, 0, getWidth(), getHeight());
-            Transform.setSize(getWidth(), getHeight());
+//            Transform.setSize(getWidth(), getHeight());
         }
     }
 
@@ -125,19 +116,19 @@ public class Window {
     public static void setWidth(int width) {
         setDisplayMode(width, getHeight(), false);
         glViewport(0, 0, getWidth(), getHeight());
-        Transform.setSize(getWidth(), getHeight());
+//        Transform.setSize(getWidth(), getHeight());
     }
 
     public static void setHeight(int height) {
         setDisplayMode(getWidth(), height, false);
         glViewport(0, 0, getWidth(), getHeight());
-        Transform.setSize(getWidth(), getHeight());
+//        Transform.setSize(getWidth(), getHeight());
     }
 
     public static void setResolution(int width, int height, boolean fullScreen) {
         setDisplayMode(width, height, fullScreen);
         glViewport(0, 0, getWidth(), getHeight());
-        Transform.setSize(getWidth(), getHeight());
+//        Transform.setSize(getWidth(), getHeight());
     }
 
     public static DisplayMode getDisplayMode() {
