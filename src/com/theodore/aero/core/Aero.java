@@ -4,7 +4,6 @@ import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.GraphicsUtil;
 import com.theodore.aero.graphics.Screen;
 import com.theodore.aero.graphics.Window;
-import com.theodore.aero.input.Input;
 import com.theodore.aero.math.Time;
 import org.lwjgl.LWJGLException;
 
@@ -121,8 +120,8 @@ public class Aero {
 
                 Window.update();
                 activeScreen.input((float) frameTime);
-                activeScreen.update((float) frameTime);
                 input.update();
+                activeScreen.update((float) frameTime);
 
                 if (frameCounter >= 1.0) {
                     graphics.setCurrentFps(frames);

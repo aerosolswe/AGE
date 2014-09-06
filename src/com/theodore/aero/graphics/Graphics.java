@@ -5,7 +5,7 @@ import com.theodore.aero.Components.Camera;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.GameObject;
 import com.theodore.aero.graphics.g3d.Material;
-import com.theodore.aero.graphics.g3d.Mesh;
+import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.graphics.shaders.forward.ForwardAmbientShader;

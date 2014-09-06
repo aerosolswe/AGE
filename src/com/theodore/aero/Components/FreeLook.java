@@ -2,7 +2,7 @@ package com.theodore.aero.Components;
 
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.graphics.Window;
-import com.theodore.aero.input.Input;
+import com.theodore.aero.core.Input;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 

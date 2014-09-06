@@ -1,7 +1,7 @@
 package com.theodore.aero.Components;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.input.Input;
+import com.theodore.aero.core.Input;
 import com.theodore.aero.math.Vector3;
 
 public class FreeMove extends GameComponent {

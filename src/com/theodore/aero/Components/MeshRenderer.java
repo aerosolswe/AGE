@@ -2,7 +2,7 @@ package com.theodore.aero.Components;
 
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.g3d.Material;
-import com.theodore.aero.graphics.g3d.Mesh;
+import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.Shader;
 
 public class MeshRenderer extends GameComponent {

@@ -6,7 +6,7 @@ import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Font;
 import com.theodore.aero.graphics.Texture;
 import com.theodore.aero.graphics.Vertex;
-import com.theodore.aero.graphics.g3d.Mesh;
+import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Vector2;

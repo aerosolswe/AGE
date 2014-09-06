@@ -1,4 +1,4 @@
-package com.theodore.aero.input;
+package com.theodore.aero.core;
 
 import com.theodore.aero.math.Vector2;
 import org.lwjgl.input.Keyboard;

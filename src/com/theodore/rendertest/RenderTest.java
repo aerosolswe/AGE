@@ -9,10 +9,11 @@ import com.theodore.aero.graphics.Texture;
 import com.theodore.aero.graphics.Window;
 import com.theodore.aero.graphics.g2d.BitmapFont;
 import com.theodore.aero.graphics.g3d.Material;
-import com.theodore.aero.graphics.g3d.Mesh;
+import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
+import com.theodore.aero.physics.*;
 
 public class RenderTest extends Screen {
 
@@ -33,13 +34,30 @@ public class RenderTest extends Screen {
         floor.getTransform().setScale(new Vector3(50, 1, 50));
         addObject(floor);
 
-        Material axeMat = new Material();
-        axeMat.setDiffuseTexture(Texture.get("axe/diff.png"));
-        axe = new GameObject();
-        axe.addComponent(new MeshRenderer(Mesh.get("axe/ax.obj"), axeMat));
-        axe.getTransform().setScale(new Vector3(0.1f, 0.1f, 0.1f));
-        axe.getTransform().getPosition().set(0, 1, 3);
-        addObject(axe);
+        PhysicsEngine physicsEngine = new PhysicsEngine();
+
+        physicsEngine.addPhysicsObject(new PhysicsObject(new Vector3(0, 1, 3), new Vector3(-0.1f, 0.4f, 0)));
+        physicsEngine.addPhysicsObject(new PhysicsObject(new Vector3(0, 1, 3), new Vector3(0.1f, 0.4f, 0)));
+
+        PhysicsEngineComponent pec = new PhysicsEngineComponent(physicsEngine);
+
+        for(int i = 0; i < pec.getPhysicsEngine().getObjects().size(); i++){
+            Material axeMat = new Material();
+            axeMat.setDiffuseTexture(Texture.get("axe/diff.png"));
+            axe = new GameObject();
+            axe.addComponent(new PhysicsObjectComponent(pec.getPhysicsEngine().getObjects().get(i)));
+            axe.addComponent(new MeshRenderer(Mesh.get("axe/ax.obj"), axeMat));
+            axe.getTransform().setScale(new Vector3(0.1f, 0.1f, 0.1f));
+//          axe.getTransform().getPosition().set(0, 1, 3);
+            addObject(axe);
+        }
+
+        addObject(new GameObject().addComponent(pec));
+
+        GameObject cubeObject = new GameObject();
+        cubeObject.addComponent(new MeshRenderer(Mesh.get("cube"), new Material()));
+        cubeObject.getTransform().setPosition(new Vector3(2, 1, 2));
+        addObject(cubeObject);
 
         camera = new Camera(new Matrix4().initPerspective((float) Math.toRadians(91),
                 (float) Window.getWidth() / (float) Window.getHeight(), 0.01f, 1000.0f));
@@ -52,17 +70,14 @@ public class RenderTest extends Screen {
         directionalLightObject.getTransform().setRotation(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(-120)));
         addObject(directionalLightObject);
 
-        orthoCam = new Camera(new Matrix4().initOrthographic(0, 1280, 0, 720, -1, 1));
+        orthoCam = new Camera(new Matrix4().initOrthographic(0, 976, 0, 518, -1, 1));
         orthoCameraObject = new GameObject().addComponent(orthoCam);
 
         fpsText = new BitmapFont("test");
+        fpsText.setWidth(32);
+        fpsText.setHeight(32);
         fpsText.setX(50);
         fpsText.setY(10);
-    }
-
-    @Override
-    public void update(float delta) {
-        cameraObject.getTransform().lookAt(axe.getTransform().getPosition(), new Vector3(0, 1, 0));
     }
 
     @Override
