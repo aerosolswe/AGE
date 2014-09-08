@@ -5,6 +5,7 @@ import com.theodore.aero.math.MathUtils;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector3;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL41;
 
@@ -467,7 +468,7 @@ public class GraphicsUtil {
         glUniformMatrix4(uniformLocation, true, Util.createFlippedBuffer(value));
     }
 
-    public int createTexture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, int clamp) {
+    public int createTexture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, boolean clamp) {
         int texture = glGenTextures();
         glBindTexture(textureTarget, texture);
 
@@ -486,8 +487,10 @@ public class GraphicsUtil {
             glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
         }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clamp);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clamp);
+        if(clamp){
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
 
         glTexParameterf(textureTarget, GL_TEXTURE_MIN_FILTER, filters);
         glTexParameterf(textureTarget, GL_TEXTURE_MAG_FILTER, filters);

@@ -20,7 +20,7 @@ public class SpotLight extends PointLight {
     }
 
     public SpotLight(Vector3 color, float intensity, Attenuation attenuation, int shadowMapPowerOf2, float viewAngle) {
-        this(color, intensity, attenuation, shadowMapPowerOf2, viewAngle, 0.1f, 0.3f, 0.0000002f);
+        this(color, intensity, attenuation, shadowMapPowerOf2, viewAngle, 1f, 0.3f, 0.0000002f);
     }
 
     public SpotLight(Vector3 color, float intensity, Attenuation attenuation) {

@@ -45,6 +45,7 @@ public class ForwardSpotShader extends Shader {
         addUniform("specularPower");
         addUniform("scale");
         addUniform("bias");
+
         addUniform("eyePos");
 
         addUniform("spotLight.pointLight.base.color");
@@ -70,12 +71,12 @@ public class ForwardSpotShader extends Shader {
         if (material.getNormalTexture() != null)
             material.getNormalTexture().bind(Texture.NORMAL_TEXTURE);
         else
-            Texture.unbind();
+            com.theodore.aero.graphics.Texture.unbind();
 
         if (material.getBumpTexture() != null)
             material.getBumpTexture().bind(Texture.HEIGHT_TEXTURE);
         else
-            Texture.unbind();
+            com.theodore.aero.graphics.Texture.unbind();
 
         if (material.getDiffuseTexture() != null)
             material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);

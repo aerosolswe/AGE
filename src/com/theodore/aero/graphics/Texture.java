@@ -21,12 +21,13 @@ public class Texture {
     public static final String DIRECTORY = "textures/";
 
     //TODO: Make texture constants dynamic (aka hashmap territory)
-    public static final Texture WHITE_PIXEL = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF}).flip(), true);
-    public static final Texture NORMAL_UP = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0x80, (byte) 0x7F, (byte) 0xFF, (byte) 0xFF}).flip(), true);
+    public static final Texture WHITE_PIXEL = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF}).flip());
+    public static final Texture NORMAL_UP = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0x80, (byte) 0x7F, (byte) 0xFF, (byte) 0xFF}).flip());
     public static final int DIFFUSE_TEXTURE = 0;
     public static final int NORMAL_TEXTURE = 1;
     public static final int HEIGHT_TEXTURE = 2;
     public static final int SHADOW_MAP_TEXTURE = 4;
+    public static final int FILTER_TEXTURE = 5;
 
     private static final HashMap<String, Texture> textures = new HashMap<String, Texture>();
 
@@ -37,7 +38,7 @@ public class Texture {
     private int width;
     private int height;
 
-    public static Texture get(String name, int linearFiltering, int clamp) {
+    public static Texture get(String name, int linearFiltering, boolean clamp) {
         if (textures.containsKey(name))
             return textures.get(name);
         else {
@@ -50,12 +51,12 @@ public class Texture {
         if (textures.containsKey(name))
             return textures.get(name);
         else {
-            textures.put(name, new Texture(name, Aero.graphicsUtil.GL_LINEAR_MIPMAP_LINEAR(), Aero.graphicsUtil.GL_NEAREST()));
+            textures.put(name, new Texture(name, Aero.graphicsUtil.GL_LINEAR_MIPMAP_LINEAR(), false));
             return textures.get(name);
         }
     }
 
-    public Texture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, int clamp, int attachment) {
+    public Texture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, boolean clamp, int attachment) {
         this.width = width;
         this.height = height;
 
@@ -66,11 +67,11 @@ public class Texture {
         }
     }
 
-    public Texture(int width, int height, ByteBuffer data, boolean mipmap) {
-        this(width, height, data, GL_LINEAR, GL_REPEAT, mipmap);
+    public Texture(int width, int height, ByteBuffer data) {
+        this(width, height, data, GL_LINEAR, false);
     }
 
-    public Texture(int width, int height, ByteBuffer data, int filter, int clamp, boolean mipmap) {
+    public Texture(int width, int height, ByteBuffer data, int filter, boolean clamp) {
         this.width = width;
         this.height = height;
 
@@ -119,7 +120,7 @@ public class Texture {
 
     }
 
-    private Texture(String fileName, int linearFiltering, int clamp) {
+    private Texture(String fileName, int linearFiltering, boolean clamp) {
         try {
             BufferedImage image = ImageIO.read(new File(Aero.getResourcePath(DIRECTORY + fileName)));
 

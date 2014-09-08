@@ -98,11 +98,10 @@ public class RenderTest extends Screen {
         directionalLightObject.getTransform().setRotation(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(-120)));
 
         spotLightObject = new GameObject();
-        spotLightObject.addComponent(new SpotLight(new Vector3(1, 1, 1), 1f, new Attenuation(0, 0, 0.2f), 10, (float)Math.toRadians(91)));
+        spotLightObject.addComponent(new SpotLight(new Vector3(1, 1, 1), 1f, new Attenuation(0, 0, 0.2f), 9, (float)Math.toRadians(91)));
 
         addObject(directionalLightObject);
         addObject(spotLightObject);
-
 
         orthoCam = new Camera(new Matrix4().initOrthographic(0, 976, 0, 518, -1, 1));
         GameObject orthoCameraObject = new GameObject().addComponent(orthoCam);

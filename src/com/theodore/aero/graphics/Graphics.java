@@ -39,21 +39,17 @@ public class Graphics {
     private Shader ambientShader;
     private Shader basicShader;
     private Shader shadowMapShader;
-    private NullFilterShader nullFilterShader;
-    private GausFilterShader gausFilterShader;
+    private Shader nullFilterShader;
+    private Shader gausFilterShader;
 
     private Camera mainCamera;
     private Camera altCamera;
 
-    private Texture[] shadowMaps;
-    private Texture[] shadowMapRenderTargets;
-
-    private GameObject[] planes;
-
-    private Mesh planeMesh;
-    private Material planeMaterial;
+    private Texture displayTexture;
     private Texture planeTexture;
-    private Transform planeTransform;
+
+    private Material planeMaterial;
+    private GameObject planeObject;
 
 
     private Matrix4 lightMatrix = new Matrix4().initIdentity();
@@ -70,11 +66,7 @@ public class Graphics {
     }
 
     public void init() {
-        ambientLight = new Vector3(0.16f, 0.18f, 0.2f);
-
-        shadowMaps = new Texture[numShadowMaps];
-        shadowMapRenderTargets = new Texture[numShadowMaps];
-        planes = new GameObject[numShadowMaps];
+        ambientLight = new Vector3(0.08f, 0.09f, 0.1f);
 
         lights = new ArrayList<BaseLight>();
 
@@ -87,46 +79,38 @@ public class Graphics {
         Mesh.generatePrimitives();
         Material.generateDefaultMaterials();
 
+        int windowWidth = Window.getWidth();
+        int windowHeight = Window.getHeight();
+
+        ByteBuffer bData = Util.createByteBuffer(windowWidth * windowHeight * 4);
+
+        displayTexture = new Texture(windowWidth, windowHeight, bData, GL_TEXTURE_2D, GL_NEAREST, GL_RGBA, GL_RGBA, false, GL30.GL_COLOR_ATTACHMENT0);
+
         int w = Window.getWidth();
         int h = Window.getHeight();
 
         ByteBuffer b = Util.createByteBuffer(w * h * 4);
 
-        planeMesh = Mesh.get("plane");
-        planeTexture = new Texture(w, h, b, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, GL12.GL_CLAMP_TO_EDGE, GL30.GL_COLOR_ATTACHMENT0);
-        planeMaterial = new Material(planeTexture);
-        planeTransform = new Transform();
+        planeTexture = new Texture(w, h, b, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, false, GL30.GL_COLOR_ATTACHMENT0);
+        planeMaterial = new Material(displayTexture);
+
+        planeObject = new GameObject().addComponent(new MeshRenderer(Mesh.get("plane"), planeMaterial));
 
         lightMatrix = new Matrix4().initScale(0, 0, 0);
-
-        for (int i = 0; i < numShadowMaps; i++) {
-            int shadowMapSize = 1 << (i + 1);
-
-            ByteBuffer buffer = Util.createByteBuffer(shadowMapSize * shadowMapSize * 4);
-            shadowMaps[i] = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, GL12.GL_CLAMP_TO_EDGE, GL30.GL_COLOR_ATTACHMENT0);
-            shadowMapRenderTargets[i] = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, GL12.GL_CLAMP_TO_EDGE, GL30.GL_COLOR_ATTACHMENT0);
-
-            planes[i] = new GameObject().addComponent(new MeshRenderer(Mesh.get("plane"), new Material(shadowMaps[i])));
-            planes[i].getTransform().rotate(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(90)));
-            planes[i].getTransform().rotate(new Quaternion(new Vector3(0, 0, 1), (float) Math.toRadians(180)));
-        }
 
         altCamera = new Camera(new Matrix4().initIdentity());
         GameObject altCameraObject = new GameObject().addComponent(altCamera);
     }
 
-    public void blurShadowMap(int shadowMapIndex, float blurAmount) {
-        Texture shadowMap = shadowMaps[shadowMapIndex];
-        Texture tempTarget = shadowMapRenderTargets[shadowMapIndex];
-
+    public void blurShadowMap(Texture shadowMap, Texture shadowMapRenderTarget, float blurAmount, GameObject object) {
         gausFilterShader.setUniform("blurScale", new Vector3(0.0f, blurAmount / (shadowMap.getHeight()), 0.0f));
-        applyFilter(gausFilterShader, tempTarget, shadowMap);
+        applyFilter(gausFilterShader, shadowMapRenderTarget, shadowMap, object);
 
         gausFilterShader.setUniform("blurScale", new Vector3(blurAmount / (shadowMap.getWidth()), 0.0f, 0.0f));
-        applyFilter(gausFilterShader, shadowMap, tempTarget);
+        applyFilter(gausFilterShader, shadowMap, shadowMapRenderTarget, object);
     }
 
-    public void applyFilter(Shader filter, Texture source, Texture dest) {
+    public void applyFilter(Shader filter, Texture source, Texture dest, GameObject object) {
         assert (source != dest);
         if (dest == null)
             Window.bindAsRenderTarget();
@@ -144,10 +128,7 @@ public class Graphics {
         mainCamera = altCamera;
 
         Aero.graphicsUtil.clearDepth();
-        filter.bind();
-        filter.updateUniforms(planeTransform, planeMaterial, this);
-        planeMesh.draw();
-//        planes[planeIndex].renderAll(filter, this);
+        object.renderAll(filter, this);
 
         mainCamera = tmp;
 
@@ -175,6 +156,7 @@ public class Graphics {
 
     private void forwardRenderingPass(GameObject object) {
         Window.bindAsRenderTarget();
+//        displayTexture.bindAsRenderTarget();
 
         Aero.graphicsUtil.setClearColor(0.32f, 0.5f, 0.8f, 1.0f);
         Aero.graphicsUtil.clearColorAndDepth();
@@ -182,21 +164,20 @@ public class Graphics {
 
         for (BaseLight light : lights) {
             activeLight = light;
-            ShadowInfo shadowInfo = activeLight.getShadowInfo();
+            ShadowInfo shadowInfo = light.getShadowInfo();
 
-            int shadowMapIndex = 0;
-            if (shadowInfo != null)
-                shadowMapIndex = shadowInfo.getShadowMapPowerOf2() - 1;
+            if (shadowInfo != null){
+                shadowInfo.getShadowMap().bindAsRenderTarget();
+                shadowInfo.getShadowMap().bind(Texture.SHADOW_MAP_TEXTURE);
+                Aero.graphicsUtil.setClearColor(1.0f, 1.0f, 0.0f, 0.0f);
+                Aero.graphicsUtil.clearColorAndDepth();
+            }
 
-            shadowMaps[shadowMapIndex].bindAsRenderTarget();
-            shadowMaps[shadowMapIndex].bind(Texture.SHADOW_MAP_TEXTURE);
-            Aero.graphicsUtil.setClearColor(1.0f, 1.0f, 0.0f, 0.0f);
-            Aero.graphicsUtil.clearColorAndDepth();
 
             if (shadowInfo != null) {
                 altCamera.setProjection(shadowInfo.getProjection());
 
-                ShadowCameraTransform shadowCameraTransform = activeLight.calcShadowCameraTransform(
+                ShadowCameraTransform shadowCameraTransform = light.calcShadowCameraTransform(
                         mainCamera.getTransform().getTransformedPos(),
                         mainCamera.getTransform().getTransformedRot()
                 );
@@ -220,17 +201,24 @@ public class Graphics {
 
                 mainCamera = tmp;
 
-                float shadowSoftness = activeLight.getShadowInfo().getShadowSoftness();
+                if(!shadowInfo.isInitGameObject()){
+                    shadowInfo.getGameObject().addComponent(new MeshRenderer(Mesh.get("plane"), new Material(shadowInfo.getShadowMap())));
+                    shadowInfo.setInitGameObject(true);
+                }
+
+
+                float shadowSoftness = light.getShadowInfo().getShadowSoftness();
                 if (shadowSoftness != 0)
-                    blurShadowMap(shadowMapIndex, shadowSoftness);
+                    blurShadowMap(shadowInfo.getShadowMap(), shadowInfo.getShadowMapRenderTarget(), shadowSoftness, shadowInfo.getGameObject());
             } else {
                 lightMatrix = new Matrix4().initScale(0, 0, 0);
 
-                activeLight.getShader().setUniformf("shadowVarianceMin", 0.00002f);
-                activeLight.getShader().setUniformf("shadowLightBleedReduction", 0.0f);
+                light.getShader().setUniformf("shadowVarianceMin", 0.00002f);
+                light.getShader().setUniformf("shadowLightBleedReduction", 0.0f);
             }
 
             Window.bindAsRenderTarget();
+//            displayTexture.bindAsRenderTarget();
 
             Aero.graphicsUtil.enableBlending(GL_ONE, GL_ONE);
             Aero.graphicsUtil.setDepthMask(false);
@@ -242,6 +230,8 @@ public class Graphics {
             Aero.graphicsUtil.setDepthMask(true);
             Aero.graphicsUtil.disableBlending();
         }
+
+//        applyFilter(nullFilterShader, displayTexture, null, planeObject);
 
     }
 
