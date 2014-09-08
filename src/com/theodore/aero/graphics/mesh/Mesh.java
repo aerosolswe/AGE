@@ -5,7 +5,6 @@ import com.theodore.aero.core.Util;
 import com.theodore.aero.graphics.Vertex;
 import com.theodore.aero.graphics.g3d.meshLoading.IndexedModel;
 import com.theodore.aero.graphics.g3d.meshLoading.OBJModel;
-import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 
 import java.util.ArrayList;

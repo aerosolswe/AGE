@@ -1,4 +1,4 @@
-package com.theodore.aero.Components;
+package com.theodore.aero.components;
 
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Input;

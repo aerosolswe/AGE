@@ -1,4 +1,4 @@
-package com.theodore.aero.Components;
+package com.theodore.aero.components;
 
 import com.theodore.aero.physics.PhysicsObject;
 

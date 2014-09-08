@@ -43,23 +43,7 @@ public class Shader {
 
     }
 
-    /*public void updateUniforms(Matrix4 worldMatrix, Matrix4 projectedMatrix, Material material) {
-
-    }*/
-
-    public void updateUniforms(Matrix4 projectedMatrix, Material material) {
-
-    }
-
-    public void updateUniforms(Material material) {
-
-    }
-
-    public void updateUniformProjectedMatrix(Matrix4 projectedMatrix) {
-
-    }
-
-    public void updateUniformWorldMatrix(Matrix4 worldMatrix) {
+    public void updateTextureUniform(String uniformName, int texture) {
 
     }
 

@@ -31,6 +31,7 @@ public class ForwardAmbientShader extends Shader {
         compileShader();
 
         addUniform("MVP");
+//        addUniform("lightMatrix");
         addUniform("ambientIntensity");
         addUniform("textureRepeat");
     }
@@ -41,6 +42,7 @@ public class ForwardAmbientShader extends Shader {
 
         Matrix4 worldMatrix = transform.getTransformation();
         Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
+        Matrix4 lightMatrix = graphics.getLightMatrix().mul(worldMatrix);
 
         if (material.getDiffuseTexture() != null)
             material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
@@ -48,19 +50,9 @@ public class ForwardAmbientShader extends Shader {
             Texture.unbind();
 
         setUniform("MVP", MVPMatrix);
+//        setUniform("lightMatrix", lightMatrix);
         setUniformi("textureRepeat", material.getTextureRepeat());
         setUniform("ambientIntensity", Aero.graphics.getAmbientLight());
     }
 
-    /*@Override
-    public void updateUniforms(Matrix4 worldMatrix, Matrix4 projectedMatrix, Material material) {
-        if (material.getDiffuseTexture() != null)
-            material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
-        else
-            Texture.unbind();
-
-        setUniform("MVP", projectedMatrix);
-        setUniformi("textureRepeat", material.getTextureRepeat());
-        setUniform("ambientIntensity", Aero.graphics.getAmbientLight());
-    }*/
 }

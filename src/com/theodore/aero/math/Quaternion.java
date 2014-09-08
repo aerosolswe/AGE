@@ -29,6 +29,21 @@ public class Quaternion {
         this.w = cosHalfAngle;
     }
 
+    public Quaternion(float heading, float attitude, float bank){
+        float c1 = (float)Math.cos(heading/2);
+        float s1 = (float)Math.sin(heading/2);
+        float c2 = (float)Math.cos(attitude/2);
+        float s2 = (float)Math.sin(attitude/2);
+        float c3 = (float)Math.cos(bank/2);
+        float s3 = (float)Math.sin(bank/2);
+        float c1c2 = c1*c2;
+        float s1s2 = s1*s2;
+        this.w = c1c2*c3 - s1s2*s3;
+        this.x = c1c2*s3 + s1s2*c3;
+        this.y = s1*c2*c3 + c1*s2*s3;
+        this.z = c1*s2*c3 - s1*c2*s3;
+    }
+
     public float length() {
         return (float) Math.sqrt(x * x + y * y + z * z + w * w);
     }

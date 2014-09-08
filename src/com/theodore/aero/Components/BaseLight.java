@@ -1,9 +1,10 @@
-package com.theodore.aero.Components;
+package com.theodore.aero.components;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.core.GameObject;
-import com.theodore.aero.graphics.g3d.ShadowMap;
+import com.theodore.aero.graphics.g3d.ShadowCameraTransform;
+import com.theodore.aero.graphics.g3d.ShadowInfo;
 import com.theodore.aero.graphics.shaders.Shader;
+import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
 
 public class BaseLight extends GameComponent {
@@ -11,19 +12,21 @@ public class BaseLight extends GameComponent {
     private Vector3 color;
     private float intensity;
     private Shader shader;
-    private ShadowMap shadowMap;
+    private ShadowInfo shadowInfo;
 
     public BaseLight(Vector3 color, float intensity) {
         this.color = color;
         this.intensity = intensity;
+        shadowInfo = null;
     }
 
-    public void render(GameObject object) {
-        shadowMap.render(object);
-    }
+    public ShadowCameraTransform calcShadowCameraTransform(Vector3 mainCameraPos, Quaternion mainCameraRotation) {
+        ShadowCameraTransform result = new ShadowCameraTransform();
 
-    public void apply(GameObject object) {
-        shadowMap.applyCameraTransform(object);
+        result.position = getTransform().getTransformedPos();
+        result.rotation = getTransform().getTransformedRot();
+
+        return result;
     }
 
     @Override
@@ -31,7 +34,15 @@ public class BaseLight extends GameComponent {
         Aero.graphics.addLight(this);
     }
 
-    public void setShader(Shader shader) {
+    public ShadowInfo getShadowInfo() {
+        return shadowInfo;
+    }
+
+    protected void setShadowInfo(ShadowInfo shadowInfo) {
+        this.shadowInfo = shadowInfo;
+    }
+
+    protected void setShader(Shader shader) {
         this.shader = shader;
     }
 
@@ -53,13 +64,5 @@ public class BaseLight extends GameComponent {
 
     public void setIntensity(float intensity) {
         this.intensity = intensity;
-    }
-
-    public void setShadowMap(ShadowMap shadowMap) {
-        this.shadowMap = shadowMap;
-    }
-
-    public ShadowMap getShadowMap() {
-        return shadowMap;
     }
 }

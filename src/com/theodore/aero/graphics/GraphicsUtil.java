@@ -1,9 +1,12 @@
 package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.Util;
+import com.theodore.aero.math.MathUtils;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector3;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL41;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -11,12 +14,17 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_BASE_LEVEL;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
+import static org.lwjgl.opengl.GL32.glFramebufferTexture;
+import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.*;
 
 public class GraphicsUtil {
 
@@ -102,6 +110,18 @@ public class GraphicsUtil {
 
     public int GL_LINEAR_MIPMAP_LINEAR() {
         return GL_LINEAR_MIPMAP_LINEAR;
+    }
+
+    public int GL_LINEAR_MIPMAP_NEAREST() {
+        return GL_LINEAR_MIPMAP_NEAREST;
+    }
+
+    public int GL_NEAREST_MIPMAP_LINEAR() {
+        return GL_NEAREST_MIPMAP_LINEAR;
+    }
+
+    public int GL_NEAREST_MIPMAP_NEAREST() {
+        return GL_NEAREST_MIPMAP_NEAREST;
     }
 
     public int GL_LINEAR() {
@@ -447,79 +467,30 @@ public class GraphicsUtil {
         glUniformMatrix4(uniformLocation, true, Util.createFlippedBuffer(value));
     }
 
-    public int createTexture(int width, int height, ByteBuffer data, float filter, int wrapMode, boolean mipmap) {
-        int texture = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        if (mipmap) {
-            GL30.glGenerateMipmap(texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-        }
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        return texture;
-    }
-
-    public int createTexture(int width, int height, ByteBuffer data, int textureTarget, float filters, int internalFormat, int format, boolean clamp, boolean mipmap) {
+    public int createTexture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, int clamp) {
         int texture = glGenTextures();
         glBindTexture(textureTarget, texture);
 
-        if (mipmap) {
+        if (filters == GL_NEAREST_MIPMAP_LINEAR ||
+                filters == GL_NEAREST_MIPMAP_NEAREST ||
+                filters == GL_LINEAR_MIPMAP_LINEAR ||
+                filters == GL_LINEAR_MIPMAP_NEAREST) {
             GL30.glGenerateMipmap(texture);
             glTexParameteri(textureTarget, GL_GENERATE_MIPMAP, GL_TRUE);
+
+            float maxAnisotropy = glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+
+            glTexParameterf(textureTarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, MathUtils.clamp(0.0f, 16.0f, maxAnisotropy));
+        }else{
+            glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
         }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clamp);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clamp);
 
         glTexParameterf(textureTarget, GL_TEXTURE_MIN_FILTER, filters);
         glTexParameterf(textureTarget, GL_TEXTURE_MAG_FILTER, filters);
-
-        if (clamp) {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        } else {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        }
-
-        glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
-
-        glTexImage2D(textureTarget, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-
-        glBindTexture(textureTarget, 0);
-
-        return texture;
-    }
-
-    public int createTexture(int width, int height, FloatBuffer data, int textureTarget, float filters, int internalFormat, int format, boolean clamp, boolean mipmap) {
-        int texture = glGenTextures();
-        glBindTexture(textureTarget, texture);
-
-        if (mipmap) {
-            GL30.glGenerateMipmap(texture);
-            glTexParameteri(textureTarget, GL_GENERATE_MIPMAP, GL_TRUE);
-        }
-
-        glTexParameterf(textureTarget, GL_TEXTURE_MIN_FILTER, filters);
-        glTexParameterf(textureTarget, GL_TEXTURE_MAG_FILTER, filters);
-
-        if (clamp) {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        } else {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        }
-
-        glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
 
         glTexImage2D(textureTarget, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 

@@ -46,25 +46,4 @@ public class BasicShader extends Shader {
         setUniformi("textureRepeat", material.getTextureRepeat());
     }
 
-    @Override
-    public void updateUniforms(Material material) {
-        if (material.getDiffuseTexture() != null)
-            material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
-        else
-            Texture.unbind();
-
-        setUniform("color", material.getColor());
-        setUniformf("alpha", material.getAlpha());
-        setUniformi("textureRepeat", material.getTextureRepeat());
-    }
-
-    @Override
-    public void updateUniformProjectedMatrix(Matrix4 projectedMatrix) {
-        setUniform("transform", projectedMatrix);
-    }
-
-    @Override
-    public void updateUniformWorldMatrix(Matrix4 worldMatrix) {
-        setUniform("transform", worldMatrix);
-    }
 }

@@ -1,6 +1,6 @@
 package com.theodore.aero.core;
 
-import com.theodore.aero.Components.GameComponent;
+import com.theodore.aero.components.GameComponent;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.shaders.Shader;
 

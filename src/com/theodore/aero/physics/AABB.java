@@ -12,7 +12,7 @@ public class AABB {
         this.maxExtents = maxExtents;
     }
 
-    public IntersectData intersectAABB(AABB other){
+    public IntersectData intersectAABB(AABB other) {
         Vector3 distance0 = other.getMinExtents().sub(maxExtents);
         Vector3 distance1 = minExtents.sub(other.maxExtents);
         Vector3 distance = distance0.max(distance1);

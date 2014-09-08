@@ -6,17 +6,17 @@ public class PhysicsEngine {
 
     private ArrayList<PhysicsObject> objects;
 
-    public PhysicsEngine(){
+    public PhysicsEngine() {
         objects = new ArrayList<PhysicsObject>();
     }
 
-    public void update(float delta){
-        for(int i = 0; i < objects.size(); i++){
+    public void update(float delta) {
+        for (int i = 0; i < objects.size(); i++) {
             objects.get(i).update(delta);
         }
     }
 
-    public void addPhysicsObject(PhysicsObject object){
+    public void addPhysicsObject(PhysicsObject object) {
         objects.add(object);
     }
 

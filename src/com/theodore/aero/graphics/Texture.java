@@ -2,16 +2,19 @@ package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Util;
+import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT16;
+import static org.lwjgl.opengl.GL20.glDrawBuffers;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL32.glFramebufferTexture;
 
 public class Texture {
 
@@ -23,35 +26,22 @@ public class Texture {
     public static final int DIFFUSE_TEXTURE = 0;
     public static final int NORMAL_TEXTURE = 1;
     public static final int HEIGHT_TEXTURE = 2;
-    public static final int SHADOW_TEXTURE_0 = 4;
-    public static final int SHADOW_TEXTURE_1 = 5;
-    public static final int SHADOW_TEXTURE_2 = 6;
-    public static final int SHADOW_TEXTURE_3 = 7;
+    public static final int SHADOW_MAP_TEXTURE = 4;
 
     private static final HashMap<String, Texture> textures = new HashMap<String, Texture>();
 
     private static int lastWriteBind = 0;
     private int id;
+    private int frameBuffer;
+    private int renderBuffer;
     private int width;
     private int height;
 
-    public int getID() {
-        return id;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public static Texture get(String name, float linearFiltering, int repeatTexture, boolean mipmap) {
+    public static Texture get(String name, int linearFiltering, int clamp) {
         if (textures.containsKey(name))
             return textures.get(name);
         else {
-            textures.put(name, new Texture(name, linearFiltering, repeatTexture, mipmap));
+            textures.put(name, new Texture(name, linearFiltering, clamp));
             return textures.get(name);
         }
     }
@@ -60,57 +50,76 @@ public class Texture {
         if (textures.containsKey(name))
             return textures.get(name);
         else {
-            textures.put(name, new Texture(name, Aero.graphicsUtil.GL_LINEAR_MIPMAP_LINEAR(), Aero.graphicsUtil.GL_REPEAT(), true));
+            textures.put(name, new Texture(name, Aero.graphicsUtil.GL_LINEAR_MIPMAP_LINEAR(), Aero.graphicsUtil.GL_NEAREST()));
             return textures.get(name);
         }
     }
 
-    public Texture(int width, int height, FloatBuffer data, int filter, int wrapMode) {
-        int textureID = glGenTextures(); // Generate texture ID
-        glBindTexture(GL_TEXTURE_2D, textureID); // Bind texture ID
-
-        // Setup wrap mode (GL_CLAMP | GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-
-        // Setup texture scaling filtering (GL_LINEAR | GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-
-        // Send texture to graphics card
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data);
-
-        this.id = textureID;
-        this.width = width;
-        this.height = height;
-    }
-
-    public Texture(int width, int height, ByteBuffer data, int textureTarget, float filters, int internalFormat, int format, boolean clamp, boolean mipmap) {
+    public Texture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, int clamp, int attachment) {
         this.width = width;
         this.height = height;
 
-        this.id = Aero.graphicsUtil.createTexture(width, height, data, textureTarget, filters, internalFormat, format, clamp, mipmap);
-    }
+        this.id = Aero.graphicsUtil.createTexture(width, height, data, textureTarget, filters, internalFormat, format, clamp);
 
-    public Texture(int width, int height, FloatBuffer data, int textureTarget, float filters, int internalFormat, int format, boolean clamp, boolean mipmap) {
-        this.width = width;
-        this.height = height;
-
-        this.id = Aero.graphicsUtil.createTexture(width, height, data, textureTarget, filters, internalFormat, format, clamp, mipmap);
+        if (attachment != 0) {
+            initRenderTarget(attachment);
+        }
     }
 
     public Texture(int width, int height, ByteBuffer data, boolean mipmap) {
         this(width, height, data, GL_LINEAR, GL_REPEAT, mipmap);
     }
 
-    public Texture(int width, int height, ByteBuffer data, float filter, int wrapMode, boolean mipmap) {
+    public Texture(int width, int height, ByteBuffer data, int filter, int clamp, boolean mipmap) {
         this.width = width;
         this.height = height;
 
-        this.id = Aero.graphicsUtil.createTexture(width, height, data, filter, wrapMode, mipmap);
+        this.id = Aero.graphicsUtil.createTexture(width, height, data, GL_TEXTURE_2D, filter, GL_RGBA8, GL_RGBA, clamp);
     }
 
-    private Texture(String fileName, float linearFiltering, int repeatTexture, boolean mipmap) {
+    private void initRenderTarget(int attachment) {
+        int drawBuffers;
+
+        boolean hasDepth = false;
+
+        if (attachment == GL_DEPTH_ATTACHMENT) {
+            drawBuffers = GL_NONE;
+            hasDepth = true;
+        } else {
+            drawBuffers = attachment;
+        }
+
+        if (frameBuffer == 0) {
+            frameBuffer = glGenFramebuffers();
+            glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        }
+
+        glFramebufferTexture(GL_FRAMEBUFFER, attachment, id, 0);
+
+        if (frameBuffer == 0)
+            return;
+
+        if (!hasDepth) {
+            renderBuffer = glGenRenderbuffers();
+            glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+        }
+
+        glDrawBuffers(drawBuffers);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            int status = glCheckFramebufferStatus(frameBuffer);
+            System.err.println("Framebuffer creation has failed " + status);
+            new Exception().printStackTrace();
+            System.exit(1);
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    }
+
+    private Texture(String fileName, int linearFiltering, int clamp) {
         try {
             BufferedImage image = ImageIO.read(new File(Aero.getResourcePath(DIRECTORY + fileName)));
 
@@ -139,7 +148,7 @@ public class Texture {
 
             this.width = image.getWidth();
             this.height = image.getHeight();
-            this.id = Aero.graphicsUtil.createTexture(width, height, buffer, linearFiltering, repeatTexture, mipmap);
+            this.id = Aero.graphicsUtil.createTexture(width, height, buffer, GL_TEXTURE_2D, linearFiltering, GL_RGBA, GL_RGBA, clamp);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -152,6 +161,37 @@ public class Texture {
 
     public static void unbind() {
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public void bindAsRenderTarget() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        glViewport(0, 0, width, height);
+    }
+
+    public void bindForWriting() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
+        glViewport(0, 0, width, height);
+    }
+
+    public void bindForReading() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer);
+        glViewport(0, 0, width, height);
+    }
+
+
+    public int getID() {
+        return id;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
 }

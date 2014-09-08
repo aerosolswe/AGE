@@ -12,7 +12,7 @@ public class BoundingSphere {
         this.radius = radius;
     }
 
-    public IntersectData intersectBoundingSphere(BoundingSphere other){
+    public IntersectData intersectBoundingSphere(BoundingSphere other) {
         float radiusDistance = radius + other.getRadius();
         float centerDistance = other.getCenter().sub(center).length();
 

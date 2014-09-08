@@ -1,6 +1,6 @@
 package com.theodore.aero.graphics.g2d;
 
-import com.theodore.aero.Components.Camera;
+import com.theodore.aero.components.Camera;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Font;

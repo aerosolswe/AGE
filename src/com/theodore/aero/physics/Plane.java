@@ -12,14 +12,14 @@ public class Plane {
         this.distance = distance;
     }
 
-    public IntersectData intersectSphere(BoundingSphere other){
+    public IntersectData intersectSphere(BoundingSphere other) {
         float distanceFromSphereCenter = Math.abs(normal.dot(other.getCenter()) + distance);
         float distanceFromSphere = distanceFromSphereCenter - other.getRadius();
 
         return new IntersectData(distanceFromSphere < 0, distanceFromSphere);
     }
 
-    public Plane normalized(){
+    public Plane normalized() {
         float length = normal.length();
 
         return new Plane(normal.div(length), distance /= length);

@@ -1,7 +1,8 @@
-uniform sampler2D shadowMap0;
-uniform sampler2D shadowMap1;
-uniform sampler2D shadowMap2;
-uniform sampler2D shadowMap3;
+in vec2 texCoord0;
+in vec3 normal0;
+in vec3 worldPos0;
+in mat3 tbnMatrix0;
+in vec4 shadowMapCoords0;
 
 uniform vec3 eyePos;
 uniform sampler2D diffuse;
@@ -12,7 +13,10 @@ uniform float specularIntensity;
 uniform float specularPower;
 uniform float scale;
 uniform float bias;
-uniform float shadowMapSize;
+
+uniform sampler2D shadowMap;
+uniform float shadowVarianceMin;
+uniform float shadowLightBleedReduction;
 
 vec3 worldPos;
 vec2 textureCoords;
@@ -137,55 +141,75 @@ vec3 calcNormal(){
     return normal;
 }
 
+float sampleShadowMap(sampler2D shadowMap, vec2 coords, float compare){
+    return step(compare, texture2D(shadowMap, coords.xy).r);
+}
 
-float calcShadowFactor(vec4 shadowCoord0, vec4 shadowCoord1, vec4 shadowCoord2, vec4 shadowCoord3){
-    vec4 shadowCoord;
-    float distanceToCamera = length(worldPos - eyePos);
+float sampleShadowMapLinear(sampler2D shadowMap, vec2 coords, float compare, vec2 texelSize){
+    vec2 pixelPos = coords/texelSize + vec2(0.5);
+    vec2 fracPart = fract(pixelPos);
+    vec2 startTexel = (pixelPos - fracPart) * texelSize;
 
-    float offsetFactor;
+    float blTexel = sampleShadowMap(shadowMap, startTexel, compare);
+    float brTexel = sampleShadowMap(shadowMap, startTexel + vec2(texelSize.x, 0.0), compare);
+    float tlTexel = sampleShadowMap(shadowMap, startTexel + vec2(0.0, texelSize.y), compare);
+    float trTexel = sampleShadowMap(shadowMap, startTexel + texelSize, compare);
 
-    float distance0 = 5; // 2.5
-    float distance1 = 15; // 7.5
-    float distance2 = 60; // 30 // 500
+    float mixA = mix(blTexel, tlTexel, fracPart.y);
+    float mixB = mix(brTexel, trTexel, fracPart.y);
 
-    if(distanceToCamera < distance0)
-        shadowCoord = shadowCoord0;
-    else if(distanceToCamera < distance1)
-        shadowCoord = shadowCoord1;
-    else if(distanceToCamera < distance2)
-        shadowCoord = shadowCoord2;
-    else
-        shadowCoord = shadowCoord3;
+    return mix(mixA, mixB, fracPart.x);
+}
 
-    shadowCoord /= shadowCoord.w;
+float sampleShadowMapPCF(sampler2D shadowMap, vec2 coords, float compare, vec2 texelSize){
+    const float NUM_SAMPLES = 3.0f;
+    const float SAMPLES_START = (NUM_SAMPLES-1.0f)/2.0f;
+    const float NUM_SAMPLES_SQUARED = NUM_SAMPLES*NUM_SAMPLES;
 
-    float shadowFactor = 0.0;
+    float result = 0.0f;
 
-    float PCFOffset = 1.0/shadowMapSize;//0.001;
-    const float PCFFactor = 5.0;
-    const float SHADOW_BIAS = 0.00000; // 0.005
-
-    for(float i = -PCFOffset; i < PCFOffset; i += 2*PCFOffset/(PCFFactor)){
-      for(float j = -PCFOffset; j < PCFOffset; j += 2*PCFOffset/(PCFFactor)){
-          float shadowMapValue;
-
-          if(distanceToCamera < distance0)
-              shadowMapValue = texture(shadowMap0, shadowCoord.xy + vec2(i,j)).r;
-          else if(distanceToCamera < distance1)
-              shadowMapValue = texture(shadowMap1, shadowCoord.xy + vec2(i,j)).r;
-          else if(distanceToCamera < distance2)
-              shadowMapValue = texture(shadowMap2, shadowCoord.xy + vec2(i,j)).r;
-          else
-              shadowMapValue = texture(shadowMap3, shadowCoord.xy + vec2(i,j)).r;
-
-          if(shadowMapValue < (shadowCoord.z - SHADOW_BIAS))
-              shadowFactor += 0.0;
-            else
-              shadowFactor += 1.0;
+    for(float y = -SAMPLES_START; y <= SAMPLES_START; y += 1.0f){
+        for(float x = -SAMPLES_START; x <= SAMPLES_START; x += 1.0f){
+            vec2 coordsOffset = vec2(x,y) * texelSize;
+            result += sampleShadowMapLinear(shadowMap, coords + coordsOffset, compare, texelSize);
         }
     }
 
-    shadowFactor /= (PCFFactor * PCFFactor);
-
-    return shadowFactor;
+    return result/NUM_SAMPLES_SQUARED;
 }
+
+float linstep(float low, float high, float v){
+    return clamp((v-low)/(high-low), 0.0, 1.0);
+}
+
+bool inRange(float value){
+    return value >= 0.0 && value <= 1.0;
+}
+
+float sampleVarianceShadowMap(sampler2D shadowMap, vec2 coords, float compare, float varianceMin, float lightBleedReductionAmount){
+    vec2 moments = texture2D(shadowMap, coords.xy).xy;
+    float p = step(compare, moments.x);
+    float variance = max(moments.y - moments.x * moments.x, varianceMin);
+
+    float d = compare - moments.x;
+    float pMax = linstep(lightBleedReductionAmount, 1.0, variance/ (variance + d*d));
+
+    return min(max(p, pMax), 1.0);
+}
+
+float calcShadowAmount(sampler2D shadowMap, vec4 initialShadowMapCoords){
+    vec3 shadowMapCoords = (initialShadowMapCoords.xyz/initialShadowMapCoords.w);
+
+    if(inRange(shadowMapCoords.z) && inRange(shadowMapCoords.x) && inRange(shadowMapCoords.y)){
+        return sampleVarianceShadowMap(shadowMap, shadowMapCoords.xy, shadowMapCoords.z, shadowVarianceMin, shadowLightBleedReduction);
+    }else{
+        return 1.0;
+    }
+}
+
+
+
+
+
+
+

@@ -120,8 +120,8 @@ public class Aero {
 
                 Window.update();
                 activeScreen.input((float) frameTime);
-                input.update();
                 activeScreen.update((float) frameTime);
+                input.update();
 
                 if (frameCounter >= 1.0) {
                     graphics.setCurrentFps(frames);

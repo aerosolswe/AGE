@@ -12,7 +12,7 @@ public class PhysicsObject {
         this.velocity = velocity;
     }
 
-    public void update(float delta){
+    public void update(float delta) {
         position.x += velocity.x * delta;
         position.y += velocity.y * delta;
         position.z += velocity.z * delta;

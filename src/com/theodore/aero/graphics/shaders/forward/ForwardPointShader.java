@@ -1,7 +1,7 @@
 package com.theodore.aero.graphics.shaders.forward;
 
-import com.theodore.aero.Components.BaseLight;
-import com.theodore.aero.Components.PointLight;
+import com.theodore.aero.components.BaseLight;
+import com.theodore.aero.components.PointLight;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Texture;
@@ -32,10 +32,12 @@ public class ForwardPointShader extends Shader {
 
         addUniform("model");
         addUniform("MVP");
+//        addUniform("lightMatrix");
 
         addUniform("diffuse");
         addUniform("normalMap");
         addUniform("bumpMap");
+//        addUniform("shadowMap");
 
         addUniform("textureRepeat");
 
@@ -62,6 +64,7 @@ public class ForwardPointShader extends Shader {
 
         Matrix4 worldMatrix = transform.getTransformation();
         Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
+        Matrix4 lightMatrix = graphics.getLightMatrix().mul(worldMatrix);
 
         if (material.getNormalTexture() != null)
             material.getNormalTexture().bind(Texture.NORMAL_TEXTURE);
@@ -80,6 +83,7 @@ public class ForwardPointShader extends Shader {
 
         setUniform("model", worldMatrix);
         setUniform("MVP", MVPMatrix);
+//        setUniform("lightMatrix", lightMatrix);
 
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
@@ -91,6 +95,7 @@ public class ForwardPointShader extends Shader {
         setUniformi("diffuse", Texture.DIFFUSE_TEXTURE);
         setUniformi("normalMap", Texture.NORMAL_TEXTURE);
         setUniformi("bumpMap", Texture.HEIGHT_TEXTURE);
+//        setUniformi("ShadowMap", Texture.SHADOW_MAP_TEXTURE);
 
         setUniformPointLight("pointLight", (PointLight) graphics.getActiveLight());
     }

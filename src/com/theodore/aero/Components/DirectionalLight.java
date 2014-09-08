@@ -1,7 +1,7 @@
-package com.theodore.aero.Components;
+package com.theodore.aero.components;
 
-import com.theodore.aero.core.GameObject;
-import com.theodore.aero.graphics.g3d.ShadowMap;
+import com.theodore.aero.graphics.g3d.ShadowCameraTransform;
+import com.theodore.aero.graphics.g3d.ShadowInfo;
 import com.theodore.aero.graphics.shaders.forward.ForwardDirectionalShader;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
@@ -9,28 +9,70 @@ import com.theodore.aero.math.Vector3;
 
 public class DirectionalLight extends BaseLight {
 
-    float[] lightViewSize = new float[]{5, 15, 60, 100};
+    private float halfShadowArea;
+
+    public DirectionalLight(Vector3 color, float intensity, int shadowMapPowerOf2, float shadowArea, float shadowSoftness, float lightBleedReductionAmount) {
+        this(color, intensity, shadowMapPowerOf2, shadowArea, shadowSoftness, lightBleedReductionAmount, 0.0000002f);
+    }
+
+    public DirectionalLight(Vector3 color, float intensity, int shadowMapPowerOf2, float shadowArea, float shadowSoftness) {
+        this(color, intensity, shadowMapPowerOf2, shadowArea, shadowSoftness, 0.1f, 0.0000002f);
+    }
+
+    public DirectionalLight(Vector3 color, float intensity, int shadowMapPowerOf2, float shadowArea) {
+        this(color, intensity, shadowMapPowerOf2, shadowArea, 1, 0.1f, 0.0000002f);
+    }
 
     public DirectionalLight(Vector3 color, float intensity) {
+        this(color, intensity, 0, 1f, 0.1f, 0.0000002f);
+    }
+
+    public DirectionalLight(Vector3 color,
+                            float intensity,
+                            int shadowMapPowerOf2,
+                            float shadowArea,
+                            float shadowSoftness,
+                            float lightBleedReductionAmount,
+                            float minVariance
+    ) {
         super(color, intensity);
 
+        this.halfShadowArea = shadowArea / 2.0f;
+
         setShader(ForwardDirectionalShader.getInstance());
-
-        Matrix4[] projMatrix = new Matrix4[4];
-
-        for (int i = 0; i < 4; i++) {
-            projMatrix[i] = new Matrix4().initOrthographic(-lightViewSize[i], lightViewSize[i],
-                    -lightViewSize[i], lightViewSize[i],
-                    -lightViewSize[i], lightViewSize[i]);
+        if (shadowMapPowerOf2 != 0) {
+            setShadowInfo(
+                    new ShadowInfo(
+                            new Matrix4().initOrthographic(-halfShadowArea, halfShadowArea, -halfShadowArea, halfShadowArea, -halfShadowArea, halfShadowArea),
+                            true,
+                            shadowMapPowerOf2,
+                            shadowSoftness,
+                            lightBleedReductionAmount,
+                            minVariance
+                    )
+            );
         }
-
-        this.setShadowMap(new ShadowMap(projMatrix, lightViewSize));
     }
 
     @Override
-    public void render(GameObject object) {
-        super.render(object);
-        getShadowMap().setDirection(getDirection());
+    public ShadowCameraTransform calcShadowCameraTransform(Vector3 mainCameraPos, Quaternion mainCameraRot) {
+        ShadowCameraTransform result = new ShadowCameraTransform();
+        result.position.x = mainCameraPos.x + mainCameraRot.getForward().x * halfShadowArea;
+        result.position.y = mainCameraPos.y + mainCameraRot.getForward().y * halfShadowArea;
+        result.position.z = mainCameraPos.z + mainCameraRot.getForward().z * halfShadowArea;
+
+        result.rotation = getTransform().getTransformedRot();
+
+        float worldTexelSize = (halfShadowArea * 2) / ((float) (1 << getShadowInfo().getShadowMapPowerOf2()));
+
+        Vector3 lightSpaceCameraPos = result.position.rotate(result.rotation.conjugate());
+
+        lightSpaceCameraPos.setX(worldTexelSize * (float) Math.floor(lightSpaceCameraPos.getX() / worldTexelSize));
+        lightSpaceCameraPos.setY(worldTexelSize * (float) Math.floor(lightSpaceCameraPos.getY() / worldTexelSize));
+
+        result.position = lightSpaceCameraPos.rotate(result.rotation);
+
+        return result;
     }
 
     public Quaternion getDirection() {
