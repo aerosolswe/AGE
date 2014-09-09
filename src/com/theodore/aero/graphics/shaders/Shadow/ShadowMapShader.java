@@ -1,4 +1,4 @@
-package com.theodore.aero.graphics.shaders.Shadow;
+package com.theodore.aero.graphics.shaders.shadow;
 
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;

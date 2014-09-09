@@ -12,6 +12,13 @@ public class Camera extends GameComponent {
         this.projection = projection;
     }
 
+    public Matrix4 getView() {
+        Matrix4 cameraRotation = getTransform().getTransformedRot().conjugate().toRotationMatrix();
+        Vector3 cameraPos = getTransform().getTransformedPos().mul(-1);
+
+        return projection.mul(cameraRotation);
+    }
+
     public Matrix4 getViewProjection() {
         Matrix4 cameraRotation = getTransform().getTransformedRot().conjugate().toRotationMatrix();
         Vector3 cameraPos = getTransform().getTransformedPos().mul(-1);

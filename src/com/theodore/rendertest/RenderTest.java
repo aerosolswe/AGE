@@ -6,26 +6,44 @@ import com.theodore.aero.core.GameObject;
 import com.theodore.aero.core.Input;
 import com.theodore.aero.graphics.*;
 import com.theodore.aero.graphics.g2d.BitmapFont;
+import com.theodore.aero.graphics.g2d.gui.Button;
+import com.theodore.aero.graphics.g2d.gui.Gui;
+import com.theodore.aero.graphics.g2d.gui.Image;
 import com.theodore.aero.graphics.g3d.Attenuation;
 import com.theodore.aero.graphics.g3d.Material;
+import com.theodore.aero.graphics.g3d.SkyBox;
 import com.theodore.aero.graphics.mesh.Mesh;
+import com.theodore.aero.math.MathUtils;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
 import com.theodore.aero.physics.PhysicsEngine;
 import com.theodore.aero.physics.PhysicsObject;
 
-public class RenderTest extends Screen {
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class RenderTest extends Screen implements KeyListener {
 
     private Camera orthoCam;
 
     private GameObject cameraObject;
 
+    private PointLight fire;
+
+    private DirectionalLight directionalLight;
     private GameObject directionalLightObject;
 
     private GameObject spotLightObject;
 
     private BitmapFont fpsText;
+
+    private Vector3 color;
+
+    private SkyBox skyBox;
+
+    private Gui gui;
+    private Button testButton;
 
     public void init() {
         Aero.addResourceDirectory("renderTest/");
@@ -87,21 +105,33 @@ public class RenderTest extends Screen {
         addObject("medium_sword.obj", "medium_sword.png", "medium_sword_normal.png", new Vector3(0.2f, 0.2f, 0.2f), new Vector3(1.1f, -0.45f, 1f), new Quaternion((float)Math.toRadians(45), (float)Math.toRadians(90), (float)Math.toRadians(90)));
         addObject("large_shield.obj", "large_shield.png", "large_shield_normal.png", new Vector3(0.2f, 0.2f, 0.2f), new Vector3(0.8f, 0.2f, 1f), new Quaternion((float)Math.toRadians(-90), (float)Math.toRadians(20), 0));
 
+        skyBox = new SkyBox();
+        setSkyBox(skyBox);
+        color = new Vector3(1f, 1f, 0.86f);
+
         Camera camera = new Camera(new Matrix4().initPerspective((float) Math.toRadians(91),
                 (float) Window.getWidth() / (float) Window.getHeight(), 0.01f, 1000.0f));
         cameraObject = new GameObject().addComponent(new FreeLook(0.5f)).addComponent(new FreeMove(5)).addComponent(camera);
         cameraObject.getTransform().setPosition(new Vector3(0, 2, -5));
         addObject(cameraObject);
 
+        fire = new PointLight(new Vector3(0.61f, 0.16f, 0), 1, new Attenuation(0, 0, 0.2f));
+        GameObject fireObject = new GameObject();
+        fireObject.addComponent(fire);
+        fireObject.getTransform().setPosition(new Vector3(0f, 0.4f, 4f));
+        addObject(fireObject);
+
         directionalLightObject = new GameObject();
-        directionalLightObject.addComponent(new DirectionalLight(new Vector3(0.75f, 0.74f, 0.67f), 0.9f, 10, 40));
+        directionalLight = new DirectionalLight(color, 0.9f, 10, 40);
+        directionalLightObject.addComponent(directionalLight);
+        directionalLightObject.addComponent(new DayNightCycle(directionalLight, skyBox, 300, 0));
         directionalLightObject.getTransform().setRotation(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(-120)));
 
         spotLightObject = new GameObject();
         spotLightObject.addComponent(new SpotLight(new Vector3(1, 1, 1), 1f, new Attenuation(0, 0, 0.2f), 9, (float)Math.toRadians(91)));
 
         addObject(directionalLightObject);
-        addObject(spotLightObject);
+//        addObject(spotLightObject);
 
         orthoCam = new Camera(new Matrix4().initOrthographic(0, 976, 0, 518, -1, 1));
         GameObject orthoCameraObject = new GameObject().addComponent(orthoCam);
@@ -111,33 +141,41 @@ public class RenderTest extends Screen {
         fpsText.setHeight(32);
         fpsText.setX(50);
         fpsText.setY(10);
-    }
 
-    float angle = -45;
+        gui = new Gui(1280, 720);
+        testButton = new Button(Texture.get("button_up.png"), Texture.get("button_down.png"), 50, 50, 190, 50);
+        gui.addWidget(testButton);
+    }
 
     @Override
     public void input(float delta) {
         super.input(delta);
 
-        if (Aero.input.getKey(Input.KEY_UP)) {
-            angle += 50 * delta;
-            System.out.println(angle);
-        } else if (Aero.input.getKey(Input.KEY_DOWN)) {
-            angle -= 50 * delta;
-            System.out.println(angle);
+        if(Aero.input.getKeyDown(Input.KEY_F1)){
+            Aero.graphics.fxaaQuality = 0;
+        }else if(Aero.input.getKeyDown(Input.KEY_F2)){
+            Aero.graphics.fxaaQuality = 4;
+        }else if(Aero.input.getKeyDown(Input.KEY_F3)){
+            Aero.graphics.fxaaQuality = 8;
+        }else if(Aero.input.getKeyDown(Input.KEY_F4)){
+            Aero.graphics.fxaaQuality = 16;
         }
     }
+
 
     @Override
     public void update(float delta) {
         super.update(delta);
+
+        fire.setIntensity(MathUtils.approach(MathUtils.random(0.5f, 1), fire.getIntensity(), delta * 5));
 
         if(Aero.input.getKeyDown(Input.KEY_E)){
             spotLightObject.getTransform().setPosition(cameraObject.getTransform().getPosition());
             spotLightObject.getTransform().setRotation(cameraObject.getTransform().getRotation());
         }
 
-        directionalLightObject.getTransform().setRotation(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(angle)));
+        gui.update(delta);
+
     }
 
     @Override
@@ -146,6 +184,9 @@ public class RenderTest extends Screen {
 
         fpsText.setText("FPS: " + Aero.graphics.getCurrentFps());
         fpsText.draw(orthoCam);
+
+        gui.draw(graphics);
+//        testButton.setTexture(graphics.displayTexture);
 
     }
 
@@ -163,6 +204,21 @@ public class RenderTest extends Screen {
     }
 
     public static void main(String[] args) {
-        new Aero(1280, 720, "Render test", 120, false, 5).start(new RenderTest());
+        new Aero(1280, 720, "Render test", 120, false).start(new RenderTest());
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        System.out.println(e.getKeyChar());
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
     }
 }

@@ -8,6 +8,7 @@ import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 
 public class GausFilterShader extends Shader {
+
     private static final GausFilterShader instance = new GausFilterShader();
 
     public static GausFilterShader getInstance() {

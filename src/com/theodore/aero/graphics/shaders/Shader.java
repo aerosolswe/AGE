@@ -6,6 +6,7 @@ import com.theodore.aero.core.Util;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.math.Matrix4;
+import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 
 import java.io.BufferedReader;
@@ -176,6 +177,10 @@ public class Shader {
 
     public void setUniformf(String uniformName, float value) {
         glUniform1f(uniforms.get(uniformName), value);
+    }
+
+    public void setUniform(String uniformName, Vector2 value) {
+        glUniform2f(uniforms.get(uniformName), value.getX(), value.getY());
     }
 
     public void setUniform(String uniformName, Vector3 value) {

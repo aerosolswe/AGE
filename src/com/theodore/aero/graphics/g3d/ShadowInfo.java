@@ -38,7 +38,7 @@ public class ShadowInfo {
         this.lightBleedReductionAmount = lightBleedReductionAmount;
         this.minVariance = minVariance;
 
-        int shadowMapSize = 1 << ((shadowMapPowerOf2-1) + 1);
+        int shadowMapSize = 1 << ((shadowMapPowerOf2 - 1) + 1);
 
         ByteBuffer buffer = Util.createByteBuffer(shadowMapSize * shadowMapSize * 4);
         shadowMap = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, true, GL30.GL_COLOR_ATTACHMENT0);
@@ -65,7 +65,7 @@ public class ShadowInfo {
         this.initGameObject = initGameObject;
     }
 
-    public GameObject getGameObject(){
+    public GameObject getGameObject() {
         return gameObject;
     }
 

@@ -1,10 +1,13 @@
 package com.theodore.aero.graphics;
 
+import com.theodore.aero.core.Aero;
+import com.theodore.aero.core.Util;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.PixelFormat;
 
 import javax.imageio.ImageIO;
@@ -14,7 +17,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_RGBA;
 import static org.lwjgl.opengl.GL30.GL_DRAW_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
@@ -25,9 +29,9 @@ public class Window {
     private static boolean sync = false;
     private static int maxFps = 3000;
 
-    public static void createWindow(int width, int height, String title, boolean fullscreen, float fov, double frameRate, int samples) throws LWJGLException {
+    public static void createWindow(int width, int height, String title, boolean fullscreen, double frameRate) throws LWJGLException {
         setDisplayMode(width, height, fullscreen);
-        Display.create(pf.withDepthBits(24).withSamples(samples).withSRGB(true));
+        Display.create();
         Display.setResizable(true);
         Display.setVSyncEnabled(false);
         Display.setTitle(title);
@@ -39,7 +43,7 @@ public class Window {
     public static void update() {
         if (isResized()) {
             glViewport(0, 0, getWidth(), getHeight());
-//            Transform.setSize(getWidth(), getHeight());
+            Aero.graphics.initDisplay(getWidth(), getHeight());
         }
     }
 

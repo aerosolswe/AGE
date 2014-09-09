@@ -25,9 +25,9 @@ public class Aero {
 
     private double frameTime;
 
-    public Aero(int width, int height, String title, double frameRate, boolean fullscreen, int samples) {
+    public Aero(int width, int height, String title, double frameRate, boolean fullscreen) {
         try {
-            Window.createWindow(width, height, title, fullscreen, 90, frameRate, samples);
+            Window.createWindow(width, height, title, fullscreen, frameRate);
         } catch (LWJGLException e) {
             e.printStackTrace();
         }
@@ -45,10 +45,8 @@ public class Aero {
 
         int samples = Settings.getSamples();
 
-        float fov = Settings.getFov();
-
         try {
-            Window.createWindow(width, height, title, fullscreen, fov, frameRate, samples);
+            Window.createWindow(width, height, title, fullscreen, frameRate);
         } catch (LWJGLException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,7 @@
 package com.theodore.aero.math;
 
+import java.util.Random;
+
 public class MathUtils {
 
     public static float clamp(float a, float min, float max) {
@@ -17,6 +19,10 @@ public class MathUtils {
             return current - delta;
 
         return goal;
+    }
+
+    public static float random(float min, float max) {
+        return min + (float) (Math.random() * ((max - min) + 1));
     }
 
 }

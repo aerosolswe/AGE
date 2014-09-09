@@ -1,10 +1,12 @@
 package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.GameObject;
+import com.theodore.aero.graphics.g3d.SkyBox;
 
 public abstract class Screen {
 
     private GameObject root;
+    private SkyBox skyBox;
 
     public void init() {
     }
@@ -18,7 +20,7 @@ public abstract class Screen {
     }
 
     public void render(Graphics graphics) {
-        graphics.fullRender(getRootGameObject());
+        graphics.fullRender(getRootGameObject(), skyBox);
     }
 
     public void addObject(GameObject object) {
@@ -36,4 +38,11 @@ public abstract class Screen {
         getRootGameObject().setEngine();
     }
 
+    public SkyBox getSkyBox() {
+        return skyBox;
+    }
+
+    public void setSkyBox(SkyBox skyBox) {
+        this.skyBox = skyBox;
+    }
 }

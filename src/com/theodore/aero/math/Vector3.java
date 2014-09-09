@@ -121,9 +121,10 @@ public class Vector3 {
         return new Vector3(x + 2.0f * x2, y + 2.0f * y2, z + 2.0f * z2);
     }
 
-    public Vector3 lerp(Vector3 newVector, float amt) {
-        return this.sub(newVector).mul(amt).add(newVector);
+    public Vector3 lerp(Vector3 dest, float lerpFactor) {
+        return dest.sub(this).mul(lerpFactor).add(this);
     }
+
 
     public Vector3 approach(Vector3 goal, float delta) {
         Vector3 current = new Vector3(x, y, z);

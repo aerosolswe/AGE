@@ -49,9 +49,9 @@ public class FreeMove extends GameComponent {
         if (Aero.input.getKey(rightKey))
             move(getTransform().getRotation().getRight(), movAmt);
         if (Aero.input.getKey(upKey))
-            move(getTransform().getRotation().getUp(), movAmt);
+            move(new Vector3(0, 1, 0), movAmt);
         if (Aero.input.getKey(downKey))
-            move(getTransform().getRotation().getUp(), -movAmt);
+            move(new Vector3(0, 1, 0), -movAmt);
     }
 
     private void move(Vector3 dir, float amt) {

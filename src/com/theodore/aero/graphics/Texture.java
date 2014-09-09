@@ -27,7 +27,7 @@ public class Texture {
     public static final int NORMAL_TEXTURE = 1;
     public static final int HEIGHT_TEXTURE = 2;
     public static final int SHADOW_MAP_TEXTURE = 4;
-    public static final int FILTER_TEXTURE = 5;
+    public static final int CUBE_TEXTURE = 5;
 
     private static final HashMap<String, Texture> textures = new HashMap<String, Texture>();
 

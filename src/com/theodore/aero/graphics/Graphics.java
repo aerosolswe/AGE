@@ -5,22 +5,19 @@ import com.theodore.aero.components.Camera;
 import com.theodore.aero.components.MeshRenderer;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.GameObject;
-import com.theodore.aero.core.Transform;
 import com.theodore.aero.core.Util;
-import com.theodore.aero.graphics.g3d.Material;
-import com.theodore.aero.graphics.g3d.ShadowCameraTransform;
-import com.theodore.aero.graphics.g3d.ShadowInfo;
+import com.theodore.aero.graphics.g3d.*;
 import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
-import com.theodore.aero.graphics.shaders.Shadow.ShadowMapShader;
+import com.theodore.aero.graphics.shaders.shadow.ShadowMapShader;
+import com.theodore.aero.graphics.shaders.filters.FxaaFilterShader;
 import com.theodore.aero.graphics.shaders.filters.GausFilterShader;
 import com.theodore.aero.graphics.shaders.filters.NullFilterShader;
 import com.theodore.aero.graphics.shaders.forward.ForwardAmbientShader;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
-import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL30;
 
 import java.nio.ByteBuffer;
@@ -41,25 +38,25 @@ public class Graphics {
     private Shader shadowMapShader;
     private Shader nullFilterShader;
     private Shader gausFilterShader;
+    private Shader fxaaFilterShader;
 
     private Camera mainCamera;
     private Camera altCamera;
 
-    private Texture displayTexture;
-    private Texture planeTexture;
+    public Texture displayTexture;
 
     private Material planeMaterial;
     private GameObject planeObject;
-
 
     private Matrix4 lightMatrix = new Matrix4().initIdentity();
     private Matrix4 biasMatrix = new Matrix4().initScale(0.5f, 0.5f, 0.5f).mul(new Matrix4().initTranslation(1.0f, 1.0f, 1.0f));
 
     private Vector3 ambientLight;
 
-    private int numShadowMaps = 10;
     private int maxFps = 3000;
     private int currentFps = 0;
+
+    public float fxaaQuality = 8.0f;
 
     public void initGraphics() {
         Aero.graphicsUtil.init();
@@ -67,6 +64,7 @@ public class Graphics {
 
     public void init() {
         ambientLight = new Vector3(0.08f, 0.09f, 0.1f);
+//        ambientLight = new Vector3(1f, 1f, 1f);
 
         lights = new ArrayList<BaseLight>();
 
@@ -75,26 +73,12 @@ public class Graphics {
         shadowMapShader = ShadowMapShader.getInstance();
         nullFilterShader = NullFilterShader.getInstance();
         gausFilterShader = GausFilterShader.getInstance();
+        fxaaFilterShader = FxaaFilterShader.getInstance();
 
         Mesh.generatePrimitives();
         Material.generateDefaultMaterials();
 
-        int windowWidth = Window.getWidth();
-        int windowHeight = Window.getHeight();
-
-        ByteBuffer bData = Util.createByteBuffer(windowWidth * windowHeight * 4);
-
-        displayTexture = new Texture(windowWidth, windowHeight, bData, GL_TEXTURE_2D, GL_NEAREST, GL_RGBA, GL_RGBA, false, GL30.GL_COLOR_ATTACHMENT0);
-
-        int w = Window.getWidth();
-        int h = Window.getHeight();
-
-        ByteBuffer b = Util.createByteBuffer(w * h * 4);
-
-        planeTexture = new Texture(w, h, b, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, false, GL30.GL_COLOR_ATTACHMENT0);
-        planeMaterial = new Material(displayTexture);
-
-        planeObject = new GameObject().addComponent(new MeshRenderer(Mesh.get("plane"), planeMaterial));
+//        initDisplay();
 
         lightMatrix = new Matrix4().initScale(0, 0, 0);
 
@@ -130,19 +114,19 @@ public class Graphics {
         Aero.graphicsUtil.clearDepth();
         object.renderAll(filter, this);
 
-        mainCamera = tmp;
-
         filter.updateTextureUniform("filterTexture", 0);
+
+        mainCamera = tmp;
 
     }
 
-    public void fullRender(GameObject object) {
+    public void fullRender(GameObject object, SkyBox skyBox) {
         switch (currentRenderingState) {
             case SIMPLE:
-                simpleRenderingPass(object);
+                simpleRenderingPass(object, skyBox);
                 break;
             case FORWARD:
-                forwardRenderingPass(object);
+                forwardRenderingPass(object, skyBox);
                 break;
             case DEFERRED:
                 break;
@@ -150,13 +134,15 @@ public class Graphics {
     }
 
 
-    private void simpleRenderingPass(GameObject object) {
+    private void simpleRenderingPass(GameObject object, SkyBox skyBox) {
         object.renderAll(basicShader, this);
+        if (skyBox != null) {
+            skyBox.render(this);
+        }
     }
 
-    private void forwardRenderingPass(GameObject object) {
-        Window.bindAsRenderTarget();
-//        displayTexture.bindAsRenderTarget();
+    private void forwardRenderingPass(GameObject object, SkyBox skyBox) {
+        displayTexture.bindAsRenderTarget();
 
         Aero.graphicsUtil.setClearColor(0.32f, 0.5f, 0.8f, 1.0f);
         Aero.graphicsUtil.clearColorAndDepth();
@@ -166,10 +152,10 @@ public class Graphics {
             activeLight = light;
             ShadowInfo shadowInfo = light.getShadowInfo();
 
-            if (shadowInfo != null){
+            if (shadowInfo != null) {
                 shadowInfo.getShadowMap().bindAsRenderTarget();
                 shadowInfo.getShadowMap().bind(Texture.SHADOW_MAP_TEXTURE);
-                Aero.graphicsUtil.setClearColor(1.0f, 1.0f, 0.0f, 0.0f);
+                Aero.graphicsUtil.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 Aero.graphicsUtil.clearColorAndDepth();
             }
 
@@ -201,7 +187,7 @@ public class Graphics {
 
                 mainCamera = tmp;
 
-                if(!shadowInfo.isInitGameObject()){
+                if (!shadowInfo.isInitGameObject()) {
                     shadowInfo.getGameObject().addComponent(new MeshRenderer(Mesh.get("plane"), new Material(shadowInfo.getShadowMap())));
                     shadowInfo.setInitGameObject(true);
                 }
@@ -213,12 +199,14 @@ public class Graphics {
             } else {
                 lightMatrix = new Matrix4().initScale(0, 0, 0);
 
-                light.getShader().setUniformf("shadowVarianceMin", 0.00002f);
-                light.getShader().setUniformf("shadowLightBleedReduction", 0.0f);
+//                light.getShader().setUniformf("shadowVarianceMin", 0.00002f);
+//                light.getShader().setUniformf("shadowLightBleedReduction", 0.0f);
             }
 
-            Window.bindAsRenderTarget();
-//            displayTexture.bindAsRenderTarget();
+            displayTexture.bindAsRenderTarget();
+            if (skyBox != null) {
+                skyBox.render(this);
+            }
 
             Aero.graphicsUtil.enableBlending(GL_ONE, GL_ONE);
             Aero.graphicsUtil.setDepthMask(false);
@@ -231,8 +219,19 @@ public class Graphics {
             Aero.graphicsUtil.disableBlending();
         }
 
-//        applyFilter(nullFilterShader, displayTexture, null, planeObject);
+        applyFilter(fxaaFilterShader, displayTexture, null, planeObject);
+    }
 
+    public void initDisplay(int width, int height) {
+        ByteBuffer bData = Util.createByteBuffer(width * height * 4);
+
+        displayTexture = new Texture(width, height, bData, GL_TEXTURE_2D, GL_LINEAR, GL_RGBA, GL_RGBA, false, GL30.GL_COLOR_ATTACHMENT0);
+
+        planeMaterial = new Material(displayTexture);
+
+        planeObject = new GameObject().addComponent(new MeshRenderer(Mesh.get("plane"), planeMaterial));
+        planeObject.getTransform().rotate(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(90.0f)));
+        planeObject.getTransform().rotate(new Quaternion(new Vector3(0, 0, 1), (float) Math.toRadians(180.0f)));
     }
 
     public void addCamera(Camera camera) {

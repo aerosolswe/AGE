@@ -15,15 +15,14 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_BASE_LEVEL;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LEVEL;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.opengl.GL32.glFramebufferTexture;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.*;
 
@@ -34,6 +33,7 @@ public class GraphicsUtil {
 
         setFrontFace(GL_CW);
         enableCullFace(GL_BACK);
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         setDepthTest(true);
         setDepthClamp(true);
@@ -482,12 +482,13 @@ public class GraphicsUtil {
             float maxAnisotropy = glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
 
             glTexParameterf(textureTarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, MathUtils.clamp(0.0f, 16.0f, maxAnisotropy));
-        }else{
+        } else {
             glTexParameteri(textureTarget, GL_TEXTURE_BASE_LEVEL, 0);
             glTexParameteri(textureTarget, GL_TEXTURE_MAX_LEVEL, 0);
         }
 
-        if(clamp){
+        if (clamp) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }

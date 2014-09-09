@@ -9,6 +9,7 @@ import com.theodore.aero.graphics.Vertex;
 import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
+import com.theodore.aero.graphics.shaders.ortho.OrthographicShader;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 import org.lwjgl.opengl.GL11;
@@ -37,7 +38,7 @@ public class BitmapFont {
     }
 
     public BitmapFont(String text, Font font, float x, float y, float z, float width, float height) {
-        this.shader = BasicShader.getInstance();
+        this.shader = OrthographicShader.getInstance();
         this.font = font;
 
         this.text = text;
@@ -74,9 +75,7 @@ public class BitmapFont {
 
     public void draw(Camera camera) {
         Camera mainCamera = Aero.graphics.getMainCamera();
-        Camera cam = camera;
-
-        Aero.graphics.setMainCamera(cam);
+        Aero.graphics.setMainCamera(camera);
 
         Aero.graphicsUtil.enableBlending(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         Aero.graphicsUtil.disableCullFace();
