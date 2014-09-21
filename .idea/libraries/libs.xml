@@ -1,11 +1,12 @@
 <component name="libraryTable">
   <library name="libs">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/lwjgl_util.jar!/" />
-      <root url="jar://$PROJECT_DIR$/libs/lwjgl.jar!/" />
-      <root url="jar://$PROJECT_DIR$/libs/kryonet-2.21-all.jar!/" />
+      <root url="file://$PROJECT_DIR$/libs" />
     </CLASSES>
-    <JAVADOC />
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/libs/javadoc" />
+    </JAVADOC>
     <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/libs" recursive="false" />
   </library>
 </component>

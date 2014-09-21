@@ -7,14 +7,10 @@ public class Image extends Widget {
     private Texture texture;
 
     public Image(Texture texture, float x, float y, float width, float height) {
-        super();
+        super(x, y, width, height);
 
         material.setDiffuseTexture(texture);
         this.texture = texture;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
     }
 
     public Texture getTexture() {

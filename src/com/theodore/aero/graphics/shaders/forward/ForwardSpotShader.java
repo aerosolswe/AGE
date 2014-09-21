@@ -45,6 +45,8 @@ public class ForwardSpotShader extends Shader {
         addUniform("specularPower");
         addUniform("scale");
         addUniform("bias");
+        addUniform("alpha");
+        addUniform("color");
 
         addUniform("eyePos");
 
@@ -87,10 +89,12 @@ public class ForwardSpotShader extends Shader {
         setUniform("MVP", MVPMatrix);
         setUniform("lightMatrix", lightMatrix);
 
+        setUniform("color", material.getColor());
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
         setUniformf("scale", material.getHeightScale());
         setUniformf("bias", material.getHeightBias());
+        setUniformf("alpha", material.getAlpha());
         setUniformi("textureRepeat", material.getTextureRepeat());
         setUniform("eyePos", graphics.getMainCamera().getTransform().getPosition());
 

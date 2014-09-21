@@ -8,10 +8,10 @@ public class Primitives {
 
     public static Mesh rectangle() {
         Vertex[] vertices = new Vertex[]{
-                new Vertex(new Vector3(-0.5f, -0.5f, 0), new Vector2(0, 1)),
-                new Vertex(new Vector3(-0.5f, 0.5f, 0), new Vector2(0, 0)),
-                new Vertex(new Vector3(0.5f, 0.5f, 0), new Vector2(1, 0)),
-                new Vertex(new Vector3(0.5f, -0.5f, 0), new Vector2(1, 1))};
+                new Vertex(new Vector3(-1f, -1f, 0), new Vector2(0, 1)),
+                new Vertex(new Vector3(-1f, 1f, 0), new Vector2(0, 0)),
+                new Vertex(new Vector3(1f, 1f, 0), new Vector2(1, 0)),
+                new Vertex(new Vector3(1f, -1f, 0), new Vector2(1, 1))};
 
         int[] indices = new int[]{0, 1, 2,
                 0, 2, 3};

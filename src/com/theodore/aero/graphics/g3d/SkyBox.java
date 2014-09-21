@@ -1,26 +1,14 @@
 package com.theodore.aero.graphics.g3d;
 
 import com.theodore.aero.components.Camera;
-import com.theodore.aero.components.GameComponent;
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.core.GameObject;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
-import com.theodore.aero.graphics.Texture;
-import com.theodore.aero.graphics.Vertex;
-import com.theodore.aero.graphics.Window;
 import com.theodore.aero.graphics.mesh.Mesh;
-import com.theodore.aero.graphics.shaders.Shader;
-import com.theodore.aero.graphics.shaders.cubemaps.SkyBoxShader;
-import com.theodore.aero.math.Matrix4;
+import com.theodore.aero.graphics.shaders.sky.SkyBoxShader;
 import com.theodore.aero.math.Vector3;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL32.*;
 
 public class SkyBox {
 
@@ -35,14 +23,20 @@ public class SkyBox {
     }
 
     public SkyBox(String front, String back, String top, String bottom, String left, String right) {
-        this.skyBoxCubeMap = new CubeMap(front, back, top, bottom, left, right);
+        this.skyBoxCubeMap = new CubeMap(
+                Aero.files.internal("default/cubemaps/" + front),
+                Aero.files.internal("default/cubemaps/" + back),
+                Aero.files.internal("default/cubemaps/" + top),
+                Aero.files.internal("default/cubemaps/" + bottom),
+                Aero.files.internal("default/cubemaps/" + left),
+                Aero.files.internal("default/cubemaps/" + right));
         this.shader = SkyBoxShader.getInstance();
 
         this.mesh = Mesh.get("sphere.obj");
         this.transform = new Transform();
         this.color = new Vector3(1, 1, 1);
 
-        transform.setScale(new Vector3(100, 100, 100));
+        transform.setScale(new Vector3(1000, 1000, 1000));
         transform.setPosition(new Vector3(0, -10, 0));
     }
 
@@ -56,14 +50,14 @@ public class SkyBox {
         Camera tmp = graphics.getMainCamera();
 
         this.shader.bind();
-        this.shader.updateUniforms(transform, graphics, this);
-        skyBoxCubeMap.bind(GL_TEXTURE0);
+        this.shader.updateUniforms(transform, graphics, color);
+//        skyBoxCubeMap.bind(GL_TEXTURE0);
         mesh.draw();
 
         graphics.setMainCamera(tmp);
 
         Aero.graphicsUtil.enableCullFace(oldCullFaceMode);
-        Aero.graphicsUtil.setDepthFunc(oldDepthFuncMode);
+//        Aero.graphicsUtil.setDepthFunc(oldDepthFuncMode);
     }
 
     public CubeMap getSkyBoxCubeMap() {

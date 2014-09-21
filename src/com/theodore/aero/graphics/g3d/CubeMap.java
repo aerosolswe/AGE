@@ -8,22 +8,82 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.glTexImage2D;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.*;
 
 public class CubeMap {
 
+    private int width;
+    private int height;
+
     public static final String DIRECTORY = "cubemaps/";
 
     private int texCube;
+    private int framebuffer;
+    private int depth;
 
-    public CubeMap(String front, String back, String top, String bottom, String left, String right) {
+    public CubeMap(int width, int height){
+        this.width = width;
+        this.height = height;
+
+        texCube = 0;
+        framebuffer = 0;
+        depth = 0;
+
+        init();
+    }
+
+    private void init() {
+        framebuffer = glGenFramebuffers();
+
+        ByteBuffer data = Util.createByteBuffer(width * height * 4);
+
+        depth = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, depth);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        texCube = glGenTextures();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        for (int i = 0 ; i < 6 ; i++) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+
+        glDrawBuffer(GL_NONE);
+
+        glReadBuffer(GL_NONE);
+
+        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            System.err.println("FB error, status: 0x%x\n" + status);
+            System.exit(1);
+        }
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+
+    public CubeMap(File front, File back, File top, File bottom, File left, File right) {
         glActiveTexture(Texture.CUBE_TEXTURE);
         texCube = glGenTextures();
 
@@ -35,11 +95,11 @@ public class CubeMap {
         loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_POSITIVE_X, right);
     }
 
-    public void loadCubeMapSide(int texture, int sideTarget, String side) {
+    public void loadCubeMapSide(int texture, int sideTarget, File side) {
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
         try {
-            BufferedImage image = ImageIO.read(new File(Aero.getResourcePath(DIRECTORY + side)));
+            BufferedImage image = ImageIO.read(side);
 
             boolean hasAlpha = image.getColorModel().hasAlpha();
 
@@ -77,6 +137,25 @@ public class CubeMap {
             System.exit(1);
         }
 
+    }
+
+    public void bindAsRenderTarget(){
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glViewport(0, 0, width, height);
+    }
+
+    public void bindForWriting(int face){
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, texCube, 0);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    }
+
+
+    public void bindForReading(int textureUnit){
+        glActiveTexture(textureUnit);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+        glViewport(0, 0, width, height);
     }
 
     public void bind(int unit) {

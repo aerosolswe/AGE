@@ -1,6 +1,7 @@
 package com.theodore.aero.components;
 
 import com.theodore.aero.core.Aero;
+import com.theodore.aero.math.Frustum;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector3;
 
@@ -28,6 +29,10 @@ public class Camera extends GameComponent {
         return projection.mul(cameraRotation.mul(cameraTranslation));
     }
 
+    public Frustum getFrustum() {
+        return new Frustum(getView().mul(getProjection()));
+    }
+
     public void setProjection(Matrix4 projection) {
         this.projection = projection;
     }
@@ -38,7 +43,7 @@ public class Camera extends GameComponent {
 
     @Override
     public void addToEngine() {
-        Aero.graphics.addCamera(this);
+        Aero.graphics.setMainCamera(this);
     }
 
 }

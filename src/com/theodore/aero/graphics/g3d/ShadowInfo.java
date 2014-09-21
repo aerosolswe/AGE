@@ -28,17 +28,15 @@ public class ShadowInfo {
     private float lightBleedReductionAmount;
     private float minVariance;
 
-    private int shadowMapPowerOf2;
+    private int shadowMapSize;
 
-    public ShadowInfo(Matrix4 projection, boolean flipFaces, int shadowMapPowerOf2, float shadowSoftness, float lightBleedReductionAmount, float minVariance) {
+    public ShadowInfo(Matrix4 projection, boolean flipFaces, int shadowMapSize, float shadowSoftness, float lightBleedReductionAmount, float minVariance) {
         this.projection = projection;
         this.flipFaces = flipFaces;
-        this.shadowMapPowerOf2 = shadowMapPowerOf2;
+        this.shadowMapSize = shadowMapSize;
         this.shadowSoftness = shadowSoftness;
         this.lightBleedReductionAmount = lightBleedReductionAmount;
         this.minVariance = minVariance;
-
-        int shadowMapSize = 1 << ((shadowMapPowerOf2 - 1) + 1);
 
         ByteBuffer buffer = Util.createByteBuffer(shadowMapSize * shadowMapSize * 4);
         shadowMap = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, true, GL30.GL_COLOR_ATTACHMENT0);
@@ -69,12 +67,12 @@ public class ShadowInfo {
         return gameObject;
     }
 
-    public int getShadowMapPowerOf2() {
-        return shadowMapPowerOf2;
+    public int getShadowMapSize() {
+        return shadowMapSize;
     }
 
-    public void setShadowMapPowerOf2(int shadowMapPowerOf2) {
-        this.shadowMapPowerOf2 = shadowMapPowerOf2;
+    public void setShadowMapSize(int shadowMapSize) {
+        this.shadowMapSize = shadowMapSize;
     }
 
     public Matrix4 getProjection() {

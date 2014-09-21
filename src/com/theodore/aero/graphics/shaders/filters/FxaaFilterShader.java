@@ -56,9 +56,9 @@ public class FxaaFilterShader extends Shader {
         float displayTextureAspect = (float) graphics.displayTexture.getWidth() / (float) graphics.displayTexture.getHeight();
         float displayTextureHeightAdditive = displayTextureAspect * fxaaAspectDistortion;
 
-        setUniformf("fxaaSpanMax", graphics.fxaaQuality);
+        setUniformf("fxaaSpanMax", Graphics.FXAA_QUALITY);
         setUniformf("fxaaReduceMin", 1.0f / 128.0f);
-        setUniformf("fxaaReduceMul", 1.0f / 8.0f);
+        setUniformf("fxaaReduceMul", 1.0f / Graphics.FXAA_QUALITY);
         setUniform("inverseFilterTextureSize", new Vector3(1.0f / (float) graphics.displayTexture.getWidth(), 1.0f / ((float) graphics.displayTexture.getHeight() + displayTextureHeightAdditive), 0.0f));
 
         setUniform("MVP", MVPMatrix);

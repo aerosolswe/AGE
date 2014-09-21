@@ -133,7 +133,6 @@ public class Quaternion {
         return this.mul(srcFactor).add(correctedDest.mul(destFactor));
     }
 
-    //From Ken Shoemake's "Quaternion Calculus and Fast Animation" article
     public Quaternion(Matrix4 rot) {
         float trace = rot.get(0, 0) + rot.get(1, 1) + rot.get(2, 2);
 

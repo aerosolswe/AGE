@@ -13,8 +13,11 @@ uniform float specularIntensity;
 uniform float specularPower;
 uniform float scale;
 uniform float bias;
+uniform float alpha;
+uniform vec3 color;
 
 uniform sampler2D shadowMap;
+uniform samplerCube cubeShadowMap;
 uniform float shadowVarianceMin;
 uniform float shadowLightBleedReduction;
 
@@ -207,9 +210,15 @@ float calcShadowAmount(sampler2D shadowMap, vec4 initialShadowMapCoords){
     }
 }
 
+float calcShadowFactor(vec3 lightDirection){
+    float sampledDistance = texture(cubeShadowMap, lightDirection).r;
 
+    float distance = length(lightDirection);
 
-
-
+    if (distance <= sampledDistance + 0.00001)
+        return 1.0;
+    else
+        return 0.5;
+}
 
 

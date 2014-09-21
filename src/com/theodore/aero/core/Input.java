@@ -1,5 +1,6 @@
 package com.theodore.aero.core;
 
+import com.theodore.aero.graphics.Window;
 import com.theodore.aero.math.Vector2;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -241,8 +242,12 @@ public class Input {
         Mouse.setCursorPosition((int) pos.getX(), (int) pos.getY());
     }
 
-    public void setCursor(boolean enabled) {
+    public void setMouseGrabbed(boolean enabled) {
         Mouse.setGrabbed(!enabled);
+    }
+
+    public boolean isMouseGrabbed() {
+        return Mouse.isGrabbed();
     }
 
 }

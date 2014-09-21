@@ -18,7 +18,6 @@ import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
 public class Shader {
 
-    public static final String DIRECTORY = "shaders/";
     private static Shader lastBind = null;
     private int program;
     private HashMap<String, Integer> uniforms;
@@ -146,7 +145,7 @@ public class Shader {
         final String INCLUDE_DIRECTIVE = "#include";
 
         try {
-            shaderReader = new BufferedReader(new FileReader(Aero.getResourcePath(DIRECTORY + fileName)));
+            shaderReader = new BufferedReader(new FileReader("res/default/shaders/" + fileName));
             String line;
 
             while ((line = shaderReader.readLine()) != null) {

@@ -1,13 +1,16 @@
 package com.theodore.aero.physics;
 
+import com.theodore.aero.math.Vector3;
+
 public class IntersectData {
 
-    private boolean isIntersecting;
-    private float distance;
+    private Vector3 direction;
 
-    public IntersectData(boolean isIntersecting, float distance) {
+    private boolean isIntersecting;
+
+    public IntersectData(boolean isIntersecting, Vector3 direction) {
         this.isIntersecting = isIntersecting;
-        this.distance = distance;
+        this.direction = direction;
     }
 
     public boolean isIntersecting() {
@@ -19,10 +22,14 @@ public class IntersectData {
     }
 
     public float getDistance() {
-        return distance;
+        return direction.length();
     }
 
-    public void setDistance(float distance) {
-        this.distance = distance;
+    public Vector3 getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Vector3 direction) {
+        this.direction = direction;
     }
 }

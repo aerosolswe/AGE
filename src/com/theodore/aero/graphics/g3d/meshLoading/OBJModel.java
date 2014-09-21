@@ -5,6 +5,7 @@ import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class OBJModel {
     private boolean hasTexCoords;
     private boolean hasNormals;
 
-    public OBJModel(String fileName) {
+    public OBJModel(File file) {
         positions = new ArrayList<Vector3>();
         texCoords = new ArrayList<Vector2>();
         normals = new ArrayList<Vector3>();
@@ -28,7 +29,7 @@ public class OBJModel {
         BufferedReader meshReader = null;
 
         try {
-            meshReader = new BufferedReader(new FileReader(fileName));
+            meshReader = new BufferedReader(new FileReader(file));
             String line;
 
             while ((line = meshReader.readLine()) != null) {

@@ -1,6 +1,8 @@
 package com.theodore.aero.components;
 
 import com.theodore.aero.graphics.g3d.Attenuation;
+import com.theodore.aero.graphics.g3d.PointShadowInfo;
+import com.theodore.aero.graphics.shaders.deferred.DeferredPointShader;
 import com.theodore.aero.graphics.shaders.forward.ForwardPointShader;
 import com.theodore.aero.math.Vector3;
 
@@ -11,7 +13,7 @@ public class PointLight extends BaseLight {
     private Attenuation attenuation;
     private float range;
 
-    public PointLight(Vector3 color, float intensity, Attenuation attenuation) {
+    public PointLight(Vector3 color, float intensity, Attenuation attenuation, int shadowSize) {
         super(color, intensity);
         this.attenuation = attenuation;
 
@@ -20,6 +22,10 @@ public class PointLight extends BaseLight {
         float c = attenuation.getConstant() - COLOR_DEPTH * getIntensity() * getColor().max();
 
         this.range = (float) ((-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a));
+
+        if(shadowSize != 0){
+            setPointShadowInfo(new PointShadowInfo(shadowSize));
+        }
 
         setShader(ForwardPointShader.getInstance());
     }

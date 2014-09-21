@@ -11,12 +11,14 @@ import com.theodore.aero.graphics.shaders.ortho.OrthographicShader;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 
 public abstract class Widget {
 
-    private ArrayList<Widget> children;
+    protected ArrayList<Widget> children;
+    protected Widget parent;
 
     protected Transform transform;
     protected Material material;
@@ -28,11 +30,19 @@ public abstract class Widget {
     protected float width;
     protected float height;
 
-    private boolean mousePressed = false;
-    private boolean mouseReleased = false;
-    private boolean mouseClicked = false;
+    protected boolean mousePressed = false;
+    protected boolean mouseReleased = false;
+    protected boolean mouseClicked = false;
+    protected boolean mouseHovered = false;
 
-    public Widget() {
+    protected boolean visible = true;
+
+    public Widget(float x, float y, float width, float height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
         transform = new Transform();
         material = new Material();
 
@@ -42,27 +52,50 @@ public abstract class Widget {
         mesh = Mesh.get("plane");
         transform.rotate(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(90)));
 //        transform.rotate(new Quaternion(new Vector3(0, 0, 1), (float) Math.toRadians(180.0f)));
-        transform.rotate(new Quaternion(new Vector3(0, 1, 0), (float) Math.toRadians(180.0f)));
+//        transform.rotate(new Quaternion(new Vector3(0, 1, 0), (float) Math.toRadians(180.0f)));
     }
 
     public void update(float delta) {
-        for (int i = 0; i < children.size(); i++) children.get(i).update(delta);
-
         transform.setScale(new Vector3(width / 2, height / 2, height / 2));
-        transform.setPosition(new Vector3((x + width) - (width / 2), (y + height) - (height / 2), 0));
 
-        mousePressed = Aero.input.getMouseDown(0) && isInside(Aero.input.getMousePosition());
-        mouseReleased = Aero.input.getMouseUp(0) && isInside(Aero.input.getMousePosition());
-        mouseClicked = Aero.input.getMouse(0) && isInside(Aero.input.getMousePosition());
+        if (parent != null) {
+            Vector3 pos = new Vector3(parent.getX() + ((this.x + width) - (width / 2)), parent.getY() + ((this.y + height) - (height / 2)), 0);
+            transform.setPosition(pos);
+
+            mousePressed = Aero.input.getMouseDown(0) && isInside(Aero.input.getMousePosition());
+            mouseReleased = Aero.input.getMouseUp(0);
+            mouseClicked = Aero.input.getMouse(0) && isInside(Aero.input.getMousePosition());
+            mouseHovered = isInside(Aero.input.getMousePosition());
+        }
+
+        for (Widget child : children) child.update(delta);
     }
 
     public void draw(Graphics graphics) {
-        orthoShader.bind();
-        orthoShader.updateUniforms(transform, material, graphics);
-        mesh.draw();
+        if (visible) {
+            if (material != null) {
+                orthoShader.bind();
+                orthoShader.updateUniforms(transform, material, graphics);
+                mesh.draw();
+            }
 
+            for (Widget child : children) child.draw(graphics);
+        }
+    }
 
-        for (int i = 0; i < children.size(); i++) children.get(i).draw(graphics);
+    public Widget center() {
+        setX(parent.getCenterX() - getCenterX());
+        setY(parent.getCenterY() - getCenterY());
+
+        return this;
+    }
+
+    public float getCenterX() {
+        return (width / 2);
+    }
+
+    public float getCenterY() {
+        return (height / 2);
     }
 
     public boolean isInside(Vector2 position) {
@@ -70,8 +103,11 @@ public abstract class Widget {
     }
 
     public boolean isInside(float x, float y) {
-        return x > this.x && x < this.x + this.width &&
-                y > this.y && y < this.y + this.height;
+        float dx = parent.getX() + this.x;
+        float dy = parent.getY() + this.y;
+
+        return x > dx && x < dx + this.width &&
+                y > dy && y < dy + this.height;
     }
 
     public boolean mousePressed() {
@@ -86,8 +122,31 @@ public abstract class Widget {
         return mouseClicked;
     }
 
+    public boolean mouseHovered() {
+        return mouseClicked;
+    }
+
+    public void setParent(Widget parent) {
+        this.parent = parent;
+    }
+
+    public Widget getParent() {
+        return parent;
+    }
+
     public void addChild(Widget widget) {
+        if (widget.getParent() == null) {
+            widget.setParent(this);
+        }
         children.add(widget);
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     public float getX() {

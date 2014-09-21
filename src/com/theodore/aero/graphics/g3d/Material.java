@@ -5,8 +5,6 @@ import com.theodore.aero.math.Vector3;
 
 public class Material {
 
-    private static Material defaultMaterial;
-
     private Texture diffuse;
     private Texture normal;
     private Texture bumpMap;
@@ -21,26 +19,26 @@ public class Material {
 
     private int textureRepeat;
 
-    public static void generateDefaultMaterials() {
-        defaultMaterial = new Material();
-    }
-
-    public static Material getDefaultMaterials() {
-        return defaultMaterial;
-    }
-
     public Material() {
-        this(Texture.get("default.png"));
+        this(Texture.get("res/default/textures/default.png"), Texture.NORMAL_UP, Texture.WHITE_PIXEL);
     }
 
     public Material(Texture diffuse) {
+        this(diffuse, Texture.NORMAL_UP, Texture.WHITE_PIXEL);
+    }
+
+    public Material(Texture diffuse, Texture normal) {
+        this(diffuse, normal, Texture.WHITE_PIXEL);
+    }
+
+    public Material(Texture diffuse, Texture normal, Texture bump) {
         this.diffuse = diffuse;
-        this.normal = Texture.NORMAL_UP;
-        this.bumpMap = Texture.WHITE_PIXEL;
+        this.normal = normal;
+        this.bumpMap = bump;
 
         this.heightScale = 0;
         this.heightBias = 0;
-        this.specularIntensity = 0;
+        this.specularIntensity = 1;
         this.specularPower = 8;
         this.textureRepeat = 1;
         this.alpha = 1;

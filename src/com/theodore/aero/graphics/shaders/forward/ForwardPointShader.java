@@ -37,7 +37,7 @@ public class ForwardPointShader extends Shader {
         addUniform("diffuse");
         addUniform("normalMap");
         addUniform("bumpMap");
-//        addUniform("shadowMap");
+        addUniform("cubeShadowMap");
 
         addUniform("textureRepeat");
 
@@ -45,6 +45,8 @@ public class ForwardPointShader extends Shader {
         addUniform("specularPower");
         addUniform("scale");
         addUniform("bias");
+        addUniform("color");
+        addUniform("alpha");
         addUniform("eyePos");
 
         addUniform("pointLight.base.color");
@@ -85,17 +87,19 @@ public class ForwardPointShader extends Shader {
         setUniform("MVP", MVPMatrix);
 //        setUniform("lightMatrix", lightMatrix);
 
+        setUniform("color", material.getColor());
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
         setUniformf("scale", material.getHeightScale());
         setUniformf("bias", material.getHeightBias());
         setUniformi("textureRepeat", material.getTextureRepeat());
+        setUniformf("alpha", material.getAlpha());
         setUniform("eyePos", graphics.getMainCamera().getTransform().getPosition());
 
         setUniformi("diffuse", Texture.DIFFUSE_TEXTURE);
         setUniformi("normalMap", Texture.NORMAL_TEXTURE);
         setUniformi("bumpMap", Texture.HEIGHT_TEXTURE);
-//        setUniformi("ShadowMap", Texture.SHADOW_MAP_TEXTURE);
+        setUniformi("cubeShadowMap", Texture.SHADOW_MAP_TEXTURE);
 
         setUniformPointLight("pointLight", (PointLight) graphics.getActiveLight());
     }

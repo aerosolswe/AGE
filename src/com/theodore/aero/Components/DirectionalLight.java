@@ -2,6 +2,7 @@ package com.theodore.aero.components;
 
 import com.theodore.aero.graphics.g3d.ShadowCameraTransform;
 import com.theodore.aero.graphics.g3d.ShadowInfo;
+import com.theodore.aero.graphics.shaders.deferred.DeferredDirectionalShader;
 import com.theodore.aero.graphics.shaders.forward.ForwardDirectionalShader;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
@@ -63,7 +64,7 @@ public class DirectionalLight extends BaseLight {
 
         result.rotation = getTransform().getTransformedRot();
 
-        float worldTexelSize = (halfShadowArea * 2) / ((float) (1 << getShadowInfo().getShadowMapPowerOf2()));
+        float worldTexelSize = (halfShadowArea * 2) / ((float) (getShadowInfo().getShadowMapSize()));
 
         Vector3 lightSpaceCameraPos = result.position.rotate(result.rotation.conjugate());
 

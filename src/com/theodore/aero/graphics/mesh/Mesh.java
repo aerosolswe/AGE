@@ -7,12 +7,12 @@ import com.theodore.aero.graphics.g3d.meshLoading.IndexedModel;
 import com.theodore.aero.graphics.g3d.meshLoading.OBJModel;
 import com.theodore.aero.math.Vector3;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Mesh {
 
-    public static final String DIRECTORY = "models/";
     private static final HashMap<String, Mesh> meshes = new HashMap<String, Mesh>();
 
     private int vbo;
@@ -49,9 +49,14 @@ public class Mesh {
         if (meshes.containsKey(name))
             return meshes.get(name);
         else {
-            meshes.put(name, loadMesh(name));
-            return meshes.get(name);
+            System.err.println("Model " + name + " wasn't loaded");
+            return meshes.get("cube");
         }
+    }
+
+    public static Mesh load(String name, File file) {
+        meshes.put(name, loadMesh(file, name));
+        return meshes.get(name);
     }
 
     public static void put(String name, Mesh mesh) {
@@ -83,7 +88,7 @@ public class Mesh {
     }
 
     public void draw() {
-        Aero.graphicsUtil.drawTriangles(vbo, ibo, size);
+        Aero.graphicsUtil.draw(vbo, ibo, size);
     }
 
     private void calcNormals(Vertex[] vertices, int[] indices) {
@@ -137,8 +142,8 @@ public class Mesh {
             vertex.setTangent(vertex.getTangent().normalized());
     }
 
-    public static Mesh loadMesh(String fileName) {
-        String[] splitArray = fileName.split("\\.");
+    public static Mesh loadMesh(File file, String name) {
+        String[] splitArray = file.getName().split("\\.");
         String ext = splitArray[splitArray.length - 1];
 
         if (!ext.equals("obj")) {
@@ -147,9 +152,7 @@ public class Mesh {
             System.exit(1);
         }
 
-        String path = Aero.getResourcePath(DIRECTORY + fileName);
-
-        OBJModel test = new OBJModel(path);
+        OBJModel test = new OBJModel(file);
         IndexedModel model = test.toIndexedModel();
 
         ArrayList<Vertex> vertices = new ArrayList<Vertex>();
@@ -167,44 +170,7 @@ public class Mesh {
         Integer[] indexData = new Integer[model.getIndices().size()];
         model.getIndices().toArray(indexData);
 
-        Mesh mesh = new Mesh(fileName, vertexData, Util.toIntArray(indexData), false, true);
-
-//        addVertices();
-
-        return mesh;
+        return new Mesh(name, vertexData, Util.toIntArray(indexData), false, true);
     }
-
-    /*public static Mesh loadMesh(String fileName) {
-        String[] splitArray = fileName.split("\\.");
-        String ext = splitArray[splitArray.length - 1];
-
-        if (!ext.equals("obj")) {
-            System.err.println("Error: File format not supported for mesh data: " + ext);
-            new Exception().printStackTrace();
-            System.exit(1);
-        }
-
-        String path = Aero.getResourcePath(DIRECTORY + fileName);
-
-        OBJModel test = new OBJModel(path);
-        IndexedModel model = test.toIndexedModel();
-        model.calcNormals();
-
-        ArrayList<Vertex> vertices = new ArrayList<Vertex>();
-
-        for (int i = 0; i < model.getPositions().size(); i++) {
-            vertices.add(new Vertex(model.getPositions().get(i),
-                    model.getTexCoords().get(i),
-                    model.getNormals().get(i)));
-        }
-
-        Vertex[] vertexData = new Vertex[vertices.size()];
-        vertices.toArray(vertexData);
-
-        Integer[] indexData = new Integer[model.getIndices().size()];
-        model.getIndices().toArray(indexData);
-
-        return new Mesh(fileName, vertexData, Util.toIntArray(indexData), false, true);
-    }*/
 
 }

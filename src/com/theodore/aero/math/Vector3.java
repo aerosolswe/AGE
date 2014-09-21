@@ -105,6 +105,15 @@ public class Vector3 {
         return this.add(result.normalized().mul(amt));
     }
 
+    public Vector3 reflect(Vector3 normal) {
+        return this.sub(normal.mul(this.dot(normal)).mul(2));
+    }
+
+    /*inline Vector<T,D> Reflect(const Vector<T,D>& normal) const
+    {
+        return *this - (normal * (this->Dot(normal) * 2));
+    }*/
+
     public Vector3 rotate(float angle, Vector3 axis) {
         return this.cross(axis.mul((float) Math.sin(Math.toRadians(-angle)))).add(this.mul((float) Math.cos(Math.toRadians(-angle))));
     }

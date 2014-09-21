@@ -10,5 +10,10 @@ void main(){
 
     vec4 lightingAmount = calcSpotLight(spotLight, normalize(calcNormal())) * calcShadowAmount(shadowMap, shadowMapCoords0);
 
-    fragColor = calcTextureColor() * lightingAmount;
+    vec4 texel = texture(diffuse, texCoord0);
+
+        if(texel.a < 0.5)
+           discard;
+
+    fragColor = vec4(color, alpha) * calcTextureColor() * lightingAmount;
 }

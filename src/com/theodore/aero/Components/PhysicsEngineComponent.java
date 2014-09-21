@@ -13,6 +13,7 @@ public class PhysicsEngineComponent extends GameComponent {
     @Override
     public void update(float delta) {
         physicsEngine.update(delta);
+        physicsEngine.handleCollisions();
     }
 
     public PhysicsEngine getPhysicsEngine() {

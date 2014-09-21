@@ -4,11 +4,16 @@ import com.theodore.aero.math.Vector3;
 
 public class PhysicsObject {
 
+    private Collider collider;
+
     private Vector3 position;
+    private Vector3 oldPosition;
     private Vector3 velocity;
 
-    public PhysicsObject(Vector3 position, Vector3 velocity) {
-        this.position = position;
+    public PhysicsObject(Collider collider, Vector3 velocity) {
+        this.collider = collider;
+        this.position = collider.getPosition();
+        this.oldPosition = position;
         this.velocity = velocity;
     }
 
@@ -16,6 +21,14 @@ public class PhysicsObject {
         position.x += velocity.x * delta;
         position.y += velocity.y * delta;
         position.z += velocity.z * delta;
+    }
+
+    public Collider getCollider() {
+        Vector3 translation = position.sub(oldPosition);
+        oldPosition = position;
+        collider.transform(translation);
+
+        return collider;
     }
 
     public Vector3 getPosition() {

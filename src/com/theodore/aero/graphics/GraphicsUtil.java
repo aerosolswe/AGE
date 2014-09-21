@@ -5,9 +5,7 @@ import com.theodore.aero.math.MathUtils;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector3;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL41;
+import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -44,6 +42,10 @@ public class GraphicsUtil {
 
     public void setClearColor(float r, float g, float b, float a) {
         glClearColor(r, g, b, a);
+    }
+
+    public void clearColorAndDeptAndStencil() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     public void clearColorAndDepth() {
@@ -175,7 +177,7 @@ public class GraphicsUtil {
         return buffer;
     }
 
-    public void drawTriangles(int vertexBuffer, int indexBuffer, int nIndices) {
+    public void draw(int vertexBuffer, int indexBuffer, int indices) {
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
@@ -188,7 +190,7 @@ public class GraphicsUtil {
         glVertexAttribPointer(3, 3, GL_FLOAT, false, Vertex.SIZE * 4, 32);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-        glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
@@ -522,5 +524,9 @@ public class GraphicsUtil {
 
     public void deleteTexture(int texture) {
         glDeleteTextures(texture);
+    }
+
+    public static String getOpenglVersion(){
+        return glGetString(GL_VERSION);
     }
 }

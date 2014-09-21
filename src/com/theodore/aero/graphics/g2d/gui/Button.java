@@ -8,16 +8,12 @@ public class Button extends Widget {
     private Texture downTexture;
 
     public Button(Texture upTexture, Texture downTexture, float x, float y, float width, float height) {
-        super();
+        super(x, y, width, height);
 
         this.upTexture = upTexture;
         this.downTexture = downTexture;
 
         material.setDiffuseTexture(upTexture);
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
     }
 
     @Override

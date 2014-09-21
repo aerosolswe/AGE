@@ -36,7 +36,7 @@ public class SpotLight extends PointLight {
                      float lightBleedReductionAmount,
                      float minVariance
     ) {
-        super(color, intensity, attenuation);
+        super(color, intensity, attenuation, 0);
         this.cutoff = (float) Math.cos(viewAngle / 2);
 
         setShader(ForwardSpotShader.getInstance());

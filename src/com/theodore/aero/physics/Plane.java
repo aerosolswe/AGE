@@ -2,21 +2,25 @@ package com.theodore.aero.physics;
 
 import com.theodore.aero.math.Vector3;
 
-public class Plane {
+public class Plane extends Collider {
 
     private Vector3 normal;
     private float distance;
 
     public Plane(Vector3 normal, float distance) {
+        super(Type.PLANE);
         this.normal = normal;
         this.distance = distance;
     }
 
-    public IntersectData intersectSphere(BoundingSphere other) {
-        float distanceFromSphereCenter = Math.abs(normal.dot(other.getCenter()) + distance);
+    public IntersectData intersectBoundingSphere(BoundingSphere other) {
+        float distanceFromSphereCenter = Math.abs(normal.dot(other.getPosition()) + distance);
         float distanceFromSphere = distanceFromSphereCenter - other.getRadius();
 
-        return new IntersectData(distanceFromSphere < 0, distanceFromSphere);
+        boolean collision = distanceFromSphere < 0;
+        Vector3 direction = normal.mul(distanceFromSphere);
+
+        return new IntersectData(collision, direction);
     }
 
     public Plane normalized() {
@@ -39,5 +43,9 @@ public class Plane {
 
     public void setDistance(float distance) {
         this.distance = distance;
+    }
+
+    @Override
+    public void transform(Vector3 translation) {
     }
 }

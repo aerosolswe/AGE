@@ -31,13 +31,13 @@ public class FreeLook extends GameComponent {
     public void input(float delta) {
         Vector2 centerPosition = new Vector2(Window.getWidth() / 2, Window.getHeight() / 2);
 
-        if (Aero.input.getKey(unlockMouseKey)) {
-            Aero.input.setCursor(true);
+        if (Aero.input.getKeyUp(unlockMouseKey)) {
+            Aero.input.setMouseGrabbed(true);
             mouseLocked = false;
         }
         if (Aero.input.getMouseDown(2)) {
             Aero.input.setMousePosition(centerPosition);
-            Aero.input.setCursor(false);
+            Aero.input.setMouseGrabbed(false);
             mouseLocked = true;
         }
 

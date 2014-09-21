@@ -1,6 +1,7 @@
 #version 330
 
-varying vec2 texCoord0;
+in vec2 texCoord0;
+out vec4 fragColor;
 
 uniform sampler2D filterTexture;
 uniform vec3 inverseFilterTextureSize;
@@ -41,8 +42,8 @@ void main(){
     float lumaResult2 = dot(luma, result2);
 
     if(lumaResult2 < lumaMin || lumaResult2 > lumaMax)
-    	gl_FragColor = vec4(result1, 1.0);
+    	fragColor = vec4(result1, 1.0);
     else
-    	gl_FragColor = vec4(result2, 1.0);
+    	fragColor = vec4(result2, 1.0);
 
 }

@@ -10,26 +10,29 @@ import java.util.HashMap;
 
 public class Bitmap {
 
-    public static final String DIRECTORY = "bitmaps/";
-
     private int width;
     private int height;
     private int[] pixels;
 
     private static final HashMap<String, Bitmap> bitmaps = new HashMap<String, Bitmap>();
 
+    public static Bitmap load(File file, String name){
+        bitmaps.put(name, new Bitmap(file));
+        return bitmaps.get(name);
+    }
+
     public static Bitmap get(String name) {
         if (bitmaps.containsKey(name))
             return bitmaps.get(name);
         else {
-            bitmaps.put(name, new Bitmap(name));
-            return bitmaps.get(name);
+            System.err.println("Bitmap " + name + " wasn't loaded");
+            return null;
         }
     }
 
-    private Bitmap(String fileName) {
+    private Bitmap(File file) {
         try {
-            BufferedImage image = ImageIO.read(new File(Aero.getResourcePath(DIRECTORY + fileName)));
+            BufferedImage image = ImageIO.read(file);
 
             width = image.getWidth();
             height = image.getHeight();

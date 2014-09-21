@@ -44,6 +44,8 @@ public class ForwardDirectionalShader extends Shader {
         addUniform("specularPower");
         addUniform("scale");
         addUniform("bias");
+        addUniform("color");
+        addUniform("alpha");
 
         addUniform("eyePos");
 
@@ -80,11 +82,13 @@ public class ForwardDirectionalShader extends Shader {
         setUniform("MVP", MVPMatrix);
         setUniform("lightMatrix", lightMatrix);
 
+        setUniform("color", material.getColor());
         setUniformf("specularIntensity", material.getSpecularIntensity());
         setUniformf("specularPower", material.getSpecularPower());
         setUniformf("scale", material.getHeightScale());
         setUniformf("bias", material.getHeightBias());
         setUniformi("textureRepeat", material.getTextureRepeat());
+        setUniformf("alpha", material.getAlpha());
         setUniform("eyePos", graphics.getMainCamera().getTransform().getPosition());
 
         if (shadowInfo != null) {

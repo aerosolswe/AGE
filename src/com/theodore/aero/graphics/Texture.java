@@ -12,13 +12,14 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glTexImage2D;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.glDrawBuffers;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL32.glFramebufferTexture;
 
 public class Texture {
-
-    public static final String DIRECTORY = "textures/";
 
     //TODO: Make texture constants dynamic (aka hashmap territory)
     public static final Texture WHITE_PIXEL = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF}).flip());
@@ -38,22 +39,45 @@ public class Texture {
     private int width;
     private int height;
 
-    public static Texture get(String name, int linearFiltering, boolean clamp) {
-        if (textures.containsKey(name))
-            return textures.get(name);
-        else {
-            textures.put(name, new Texture(name, linearFiltering, clamp));
-            return textures.get(name);
-        }
+
+    public static final int GBUFFER_TEXTURE_TYPE_POSITION = 0;
+    public static final int GBUFFER_TEXTURE_TYPE_DIFFUSE = 1;
+    public static final int GBUFFER_TEXTURE_TYPE_NORMAL = 2;
+
+    private int depthTexture;
+    private int finalTexture;
+    private int[] textureIds;
+
+    public static void generateBaseTextures() {
+        textures.put("default", new Texture(Aero.files.internal("default/textures/default.png"), GL_LINEAR_MIPMAP_LINEAR, false));
+        textures.put("fontsheet", new Texture(Aero.files.internal("default/textures/fontsheet.png"), GL_LINEAR_MIPMAP_LINEAR, false));
     }
 
     public static Texture get(String name) {
-        if (textures.containsKey(name))
+        if (textures.containsKey(name)){
             return textures.get(name);
-        else {
-            textures.put(name, new Texture(name, Aero.graphicsUtil.GL_LINEAR_MIPMAP_LINEAR(), false));
-            return textures.get(name);
+        }else {
+            return textures.get("default");
         }
+    }
+
+    public static void load(String name, File file) {
+        textures.put(name, new Texture(file, Aero.graphicsUtil.GL_LINEAR_MIPMAP_LINEAR(), false));
+    }
+
+    public static void load(String name, File file, int linearFiltering, boolean clamp) {
+        textures.put(name, new Texture(file, linearFiltering, clamp));
+    }
+
+    public Texture(int width, int height) {
+        this.width = width;
+        this.height = height;
+
+        frameBuffer = 0;
+        depthTexture = 0;
+        textureIds = new int[3];
+
+        initGBuffer();
     }
 
     public Texture(int width, int height, ByteBuffer data, int textureTarget, int filters, int internalFormat, int format, boolean clamp, int attachment) {
@@ -76,6 +100,50 @@ public class Texture {
         this.height = height;
 
         this.id = Aero.graphicsUtil.createTexture(width, height, data, GL_TEXTURE_2D, filter, GL_RGBA8, GL_RGBA, clamp);
+    }
+
+    private void initGBuffer() {
+        // Create the FBO
+        frameBuffer = glGenFramebuffers();
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+        // Create the gbuffer textures
+        for (int i = 0; i < textureIds.length; i++) {
+            textureIds[i] = glGenTextures();
+        }
+        depthTexture = glGenTextures();
+        finalTexture = glGenTextures();
+
+        ByteBuffer data = Util.createByteBuffer(width * height * 4);
+
+
+        for (int i = 0; i < textureIds.length; i++) {
+            glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textureIds[i], 0);
+        }
+
+        // depth
+        glBindTexture(GL_TEXTURE_2D, depthTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, data);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+
+        // final
+        glBindTexture(GL_TEXTURE_2D, finalTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, finalTexture, 0);
+
+        int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            System.err.println("FB error, status: 0x%x\n" + status);
+            System.exit(1);
+        }
+
+        // restore default FBO
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 
     private void initRenderTarget(int attachment) {
@@ -120,9 +188,9 @@ public class Texture {
 
     }
 
-    private Texture(String fileName, int linearFiltering, boolean clamp) {
+    private Texture(File file, int linearFiltering, boolean clamp) {
         try {
-            BufferedImage image = ImageIO.read(new File(Aero.getResourcePath(DIRECTORY + fileName)));
+            BufferedImage image = ImageIO.read(file);
 
             boolean hasAlpha = image.getColorModel().hasAlpha();
 
@@ -167,18 +235,6 @@ public class Texture {
     public void bindAsRenderTarget() {
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-        glViewport(0, 0, width, height);
-    }
-
-    public void bindForWriting() {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBuffer);
-        glViewport(0, 0, width, height);
-    }
-
-    public void bindForReading() {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer);
         glViewport(0, 0, width, height);
     }
 

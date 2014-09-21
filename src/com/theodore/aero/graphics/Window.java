@@ -5,10 +5,8 @@ import com.theodore.aero.core.Util;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.*;
 import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.PixelFormat;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -29,30 +27,30 @@ public class Window {
     private static boolean sync = false;
     private static int maxFps = 3000;
 
-    public static void createWindow(int width, int height, String title, boolean fullscreen, double frameRate) throws LWJGLException {
+    public static void createWindow(int width, int height, String title, boolean fullscreen, boolean vSync) throws LWJGLException {
         setDisplayMode(width, height, fullscreen);
         Display.create();
-        Display.setResizable(true);
-        Display.setVSyncEnabled(false);
+        Display.setResizable(!fullscreen);
+        Display.setVSyncEnabled(vSync);
         Display.setTitle(title);
         Keyboard.create();
         Mouse.create();
-        Window.sync((int) frameRate);
+
+        System.out.println("OpenGL version: " + GraphicsUtil.getOpenglVersion());
     }
 
     public static void update() {
         if (isResized()) {
+            Aero.activeScreen.resized(getWidth(), getHeight());
             glViewport(0, 0, getWidth(), getHeight());
-            Aero.graphics.initDisplay(getWidth(), getHeight());
+            if (Aero.graphics.displayTexture != null) {
+                Aero.graphics.initDisplay(getWidth(), getHeight());
+            }
         }
     }
 
     public static void render() {
         Display.update();
-
-        if (sync) {
-            Display.sync(maxFps);
-        }
     }
 
     public static void sync() {
@@ -117,24 +115,6 @@ public class Window {
         return Display.isFullscreen();
     }
 
-    public static void setWidth(int width) {
-        setDisplayMode(width, getHeight(), false);
-        glViewport(0, 0, getWidth(), getHeight());
-//        Transform.setSize(getWidth(), getHeight());
-    }
-
-    public static void setHeight(int height) {
-        setDisplayMode(getWidth(), height, false);
-        glViewport(0, 0, getWidth(), getHeight());
-//        Transform.setSize(getWidth(), getHeight());
-    }
-
-    public static void setResolution(int width, int height, boolean fullScreen) {
-        setDisplayMode(width, height, fullScreen);
-        glViewport(0, 0, getWidth(), getHeight());
-//        Transform.setSize(getWidth(), getHeight());
-    }
-
     public static DisplayMode getDisplayMode() {
         return Display.getDisplayMode();
     }
@@ -177,6 +157,14 @@ public class Window {
 
     public static DisplayMode[] getAvailableDisplayModes() throws LWJGLException {
         return Display.getAvailableDisplayModes();
+    }
+
+    public static void setFullscreen(boolean value){
+        try {
+            Display.setFullscreen(value);
+        } catch (LWJGLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void setDisplayMode(int width, int height, boolean fullscreen) {
@@ -235,27 +223,48 @@ public class Window {
     public static void setIcon(String icon16, String icon32) {
         try {
             ByteBuffer[] icons = new ByteBuffer[2];
-            icons[0] = loadIcon("res/default/" + icon16, 16, 16);
-            icons[1] = loadIcon("res/default/" + icon32, 32, 32);
+            icons[0] = loadIcon(icon16);
+            icons[1] = loadIcon(icon32);
             Display.setIcon(icons);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static ByteBuffer loadIcon(String filename, int width, int height) throws IOException {
-        BufferedImage image = ImageIO.read(new File(filename)); // load image
+    public static ByteBuffer loadIcon(String filename) throws IOException {
+        try {
+            BufferedImage image = ImageIO.read(new File("res/default/textures/" + filename));
 
-        // convert image to byte array
-        byte[] imageBytes = new byte[width * height * 4];
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                int pixel = image.getRGB(j, i);
-                for (int k = 0; k < 3; k++) // red, green, blue
-                    imageBytes[(i * 16 + j) * 4 + k] = (byte) (((pixel >> (2 - k) * 8)) & 255);
-                imageBytes[(i * 16 + j) * 4 + 3] = (byte) (((pixel >> (3) * 8)) & 255); // alpha
+            boolean hasAlpha = image.getColorModel().hasAlpha();
+
+            int[] pixels = image.getRGB(0, 0, image.getWidth(),
+                    image.getHeight(), null, 0, image.getWidth());
+
+            ByteBuffer buffer = Util.createByteBuffer(image.getWidth() * image.getHeight() * 4);
+
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    int pixel = pixels[y * image.getWidth() + x];
+
+                    buffer.put((byte) ((pixel >> 16) & 0xFF));
+                    buffer.put((byte) ((pixel >> 8) & 0xFF));
+                    buffer.put((byte) ((pixel >> 0) & 0xFF));
+                    if (hasAlpha)
+                        buffer.put((byte) ((pixel >> 24) & 0xFF));
+                    else
+                        buffer.put((byte) (0xFF));
+                }
             }
+
+            buffer.flip();
+
+            return buffer;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
-        return ByteBuffer.wrap(imageBytes);
+
+        return null;
     }
 }
