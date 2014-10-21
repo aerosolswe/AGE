@@ -2,7 +2,6 @@ package com.theodore.aero.components;
 
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Input;
-import com.theodore.aero.graphics.g3d.SkyBox;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
 
@@ -34,9 +33,9 @@ public class DayNightCycle extends GameComponent {
     public void input(float delta) {
         super.input(delta);
 
-        if(Aero.input.getKeyDown(Input.KEY_UP)){
+        if (Aero.input.getKeyDown(Input.KEY_UP)) {
             inputAcceleration = 10;
-        }else if(Aero.input.getKeyUp(Input.KEY_UP)){
+        } else if (Aero.input.getKeyUp(Input.KEY_UP)) {
             inputAcceleration = 0;
         }
     }
@@ -49,21 +48,21 @@ public class DayNightCycle extends GameComponent {
 
         directionalLight.setColor(color);
 
-        if (time >= 370 || time <= -360)
+        /*if (time >= 370 || time <= -360)
             time = 100;
 
-        if(time >= 264 && time <= 276){
+        if (time >= 264 && time <= 276) {
             time = 277;
-        }
+        }*/
 
         if (time > 170 && time < 210) {
-            color = color.lerp(SUNRISE, delta * timeAcceleration/time);
+            color = color.lerp(SUNRISE, delta * timeAcceleration / time);
         } else if (time > 210 && time < 300) {
-            color = color.lerp(DAY, delta * timeAcceleration/time);
+            color = color.lerp(DAY, delta * timeAcceleration / time);
         } else if (time > 300 && time < 340) {
-            color = color.lerp(SUNSET, delta * timeAcceleration/time);
+            color = color.lerp(SUNSET, delta * timeAcceleration / time);
         } else if (time > 340 || time < 150) {
-            color = color.lerp(NIGHT, delta * timeAcceleration/time);
+            color = color.lerp(NIGHT, delta * timeAcceleration / time);
         }
 
         getTransform().setRotation(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(time)));

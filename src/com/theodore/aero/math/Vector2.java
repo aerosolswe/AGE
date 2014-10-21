@@ -2,8 +2,8 @@ package com.theodore.aero.math;
 
 
 public class Vector2 {
-    private float x;
-    private float y;
+    public float x;
+    public float y;
 
     public Vector2() {
         this.x = 0;

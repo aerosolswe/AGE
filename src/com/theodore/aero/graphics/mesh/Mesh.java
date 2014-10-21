@@ -1,153 +1,77 @@
 package com.theodore.aero.graphics.mesh;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.core.Util;
-import com.theodore.aero.graphics.Vertex;
-import com.theodore.aero.graphics.g3d.meshLoading.IndexedModel;
-import com.theodore.aero.graphics.g3d.meshLoading.OBJModel;
-import com.theodore.aero.math.Vector3;
+import com.theodore.aero.graphics.mesh.meshLoading.IndexedModel;
+import com.theodore.aero.graphics.mesh.meshLoading.OBJModel;
+import com.theodore.aero.resourceManagement.MeshResource;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Mesh {
 
-    private static final HashMap<String, Mesh> meshes = new HashMap<String, Mesh>();
-
-    private int vbo;
-    private int ibo;
-    private int size;
-
+    private static HashMap<String, MeshResource> loadedModels = new HashMap<String, MeshResource>();
+    private MeshResource resource;
     private String name;
 
-    /**
-     * @throws java.lang.Throwable
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        if (vbo != 0)
-            Aero.graphicsUtil.deleteBuffer(vbo);
-        if (ibo != 0)
-            Aero.graphicsUtil.deleteBuffer(ibo);
-
-        meshes.remove(name);
-    }
-
-    private Mesh(String name, Vertex[] vertices, int[] indices, boolean calcNormals, boolean calcTangents) {
+    public Mesh(String name, File file) {
         this.name = name;
-        this.vbo = 0;
-        this.ibo = 0;
-        this.size = 0;
+        MeshResource oldResource = loadedModels.get(name);
 
-        addVertices(vertices, indices, calcNormals, calcTangents);
-    }
-
-    public static Mesh get(String name) {
-        if (meshes.containsKey(name))
-            return meshes.get(name);
-        else {
-            System.err.println("Model " + name + " wasn't loaded");
-            return meshes.get("cube");
+        if (oldResource != null) {
+            resource = oldResource;
+            resource.addReference();
+        } else {
+            resource = loadMesh(file);
+            loadedModels.put(name, resource);
         }
     }
 
-    public static Mesh load(String name, File file) {
-        meshes.put(name, loadMesh(file, name));
-        return meshes.get(name);
-    }
+    public Mesh(String name, IndexedModel model) {
+        this.name = name;
 
-    public static void put(String name, Mesh mesh) {
-        meshes.put(name, mesh);
-    }
+        MeshResource oldResource = loadedModels.get(name);
 
-    public static void generatePrimitives() {
-        Primitives.rectangle();
-        Primitives.plane();
-        Primitives.cube();
-    }
-
-    public static Mesh customMesh(String name, Vertex[] vertices, int[] indices, boolean calcNormals, boolean calcTangents) {
-        Mesh mesh = new Mesh(name, vertices, indices, calcNormals, calcTangents);
-        meshes.put(name, mesh);
-        return meshes.get(name);
-    }
-
-    private void addVertices(Vertex[] vertices, int[] indices, boolean calcNormals, boolean calcTangents) {
-        if (calcNormals)
-            calcNormals(vertices, indices);
-        if (calcTangents)
-            calcTangents(vertices, indices);
-
-        size = indices.length;
-
-        vbo = Aero.graphicsUtil.createVertexBuffer(Util.createFlippedBuffer(vertices), true);
-        ibo = Aero.graphicsUtil.createIndexBuffer(Util.createFlippedBuffer(indices), true);
-    }
-
-    public void draw() {
-        Aero.graphicsUtil.draw(vbo, ibo, size);
-    }
-
-    private void calcNormals(Vertex[] vertices, int[] indices) {
-        for (int i = 0; i < indices.length; i += 3) {
-            int i0 = indices[i];
-            int i1 = indices[i + 1];
-            int i2 = indices[i + 2];
-
-            Vector3 v1 = vertices[i1].getPos().sub(vertices[i0].getPos());
-            Vector3 v2 = vertices[i2].getPos().sub(vertices[i0].getPos());
-
-            Vector3 normal = v1.cross(v2).normalized();
-
-            vertices[i0].setNormal(vertices[i0].getNormal().add(normal));
-            vertices[i1].setNormal(vertices[i1].getNormal().add(normal));
-            vertices[i2].setNormal(vertices[i2].getNormal().add(normal));
+        if (oldResource != null) {
+            resource = oldResource;
+            resource.addReference();
+        } else {
+            resource = new MeshResource(model);
+            loadedModels.put(name, resource);
         }
-
-        for (Vertex vertex : vertices)
-            vertex.setNormal(vertex.getNormal().normalized());
     }
 
-    private void calcTangents(Vertex[] vertices, int[] indices) {
-        for (int i = 0; i < indices.length; i += 3) {
-            Vertex v0 = vertices[indices[i]];
-            Vertex v1 = vertices[indices[i + 1]];
-            Vertex v2 = vertices[indices[i + 2]];
+    public Mesh(String name) {
+        this.name = name;
 
-            Vector3 edge1 = v1.getPos().sub(v0.getPos());
-            Vector3 edge2 = v2.getPos().sub(v0.getPos());
+        MeshResource oldResource = loadedModels.get(name);
 
-            float deltaU1 = v1.getTexCoord().getX() - v0.getTexCoord().getX();
-            float deltaU2 = v2.getTexCoord().getX() - v0.getTexCoord().getX();
-            float deltaV1 = v1.getTexCoord().getY() - v0.getTexCoord().getY();
-            float deltaV2 = v2.getTexCoord().getY() - v0.getTexCoord().getY();
-
-            float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
-
-            Vector3 tangent = new Vector3(0, 0, 0);
-
-            tangent.setX(f * (deltaV2 * edge1.getX() - deltaV1 * edge2.getX()));
-            tangent.setY(f * (deltaV2 * edge1.getY() - deltaV1 * edge2.getY()));
-            tangent.setZ(f * (deltaV2 * edge1.getZ() - deltaV1 * edge2.getZ()));
-
-            v0.setTangent(v0.getTangent().add(tangent));
-            v1.setTangent(v1.getTangent().add(tangent));
-            v2.setTangent(v2.getTangent().add(tangent));
+        if (oldResource != null) {
+            resource = oldResource;
+            resource.addReference();
+        } else {
+            System.err.println("Couldnt find the mesh with specified name '" + name + "', using default cube!");
+            resource = loadedModels.get("cube");
         }
-
-        for (Vertex vertex : vertices)
-            vertex.setTangent(vertex.getTangent().normalized());
     }
 
-    public static Mesh loadMesh(File file, String name) {
+    @Override
+    protected void finalize() {
+        if (resource.removeReference() && !name.isEmpty()) {
+            loadedModels.remove(name);
+        }
+    }
+
+    public void draw(int mode) {
+        resource.draw(mode);
+    }
+
+    private static MeshResource loadMesh(File file) {
         String[] splitArray = file.getName().split("\\.");
         String ext = splitArray[splitArray.length - 1];
 
         if (!ext.equals("obj")) {
-            System.err.println("Error: File format not supported for mesh data: " + ext);
+            System.err.println("Error: '" + ext + "' file format not supported for mesh data.");
             new Exception().printStackTrace();
             System.exit(1);
         }
@@ -155,22 +79,15 @@ public class Mesh {
         OBJModel test = new OBJModel(file);
         IndexedModel model = test.toIndexedModel();
 
-        ArrayList<Vertex> vertices = new ArrayList<Vertex>();
+        return new MeshResource(model);
+    }
 
-        for (int i = 0; i < model.getPositions().size(); i++) {
-            vertices.add(new Vertex(model.getPositions().get(i),
-                    model.getTexCoords().get(i),
-                    model.getNormals().get(i),
-                    model.getTangents().get(i)));
-        }
-
-        Vertex[] vertexData = new Vertex[vertices.size()];
-        vertices.toArray(vertexData);
-
-        Integer[] indexData = new Integer[model.getIndices().size()];
-        model.getIndices().toArray(indexData);
-
-        return new Mesh(name, vertexData, Util.toIntArray(indexData), false, true);
+    public static void generateBasicMesh() {
+        loadedModels.put("cube", new MeshResource(Primitives.cube()));
+        loadedModels.put("plane", new MeshResource(Primitives.plane()));
+        loadedModels.put("rectangle", new MeshResource(Primitives.rectangle()));
+        loadedModels.put("dome", loadMesh(Aero.files.internal("default/models/dome.obj")));
+        loadedModels.put("sphere", loadMesh(Aero.files.internal("default/models/sphere.obj")));
     }
 
 }

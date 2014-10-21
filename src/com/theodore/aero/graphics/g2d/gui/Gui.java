@@ -37,7 +37,6 @@ public class Gui {
         Camera mainCamera = Aero.graphics.getMainCamera();
         Aero.graphics.setMainCamera(camera);
 
-//        Aero.graphicsUtil.clearColorAndDepth();
         Aero.graphicsUtil.enableBlending(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         Aero.graphicsUtil.disableCullFace();
         Aero.graphicsUtil.setDepthTest(false);

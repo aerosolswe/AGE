@@ -1,17 +1,12 @@
 package com.theodore.aero.graphics;
 
 import com.theodore.aero.components.GameComponent;
-import com.theodore.aero.components.MeshRenderer;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Transform;
-import com.theodore.aero.core.Util;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.graphics.mesh.Mesh;
-import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
-import com.theodore.aero.graphics.shaders.forward.ForwardAmbientShader;
 import com.theodore.aero.math.MathUtils;
-import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
 import org.lwjgl.opengl.GL11;
 
@@ -37,7 +32,8 @@ public class ParticleEmitter extends GameComponent {
     private float particleLifeTime;
 
     public ParticleEmitter() {
-        this(Mesh.get("rectangle"), new Material(), 0.2f, 2, new Vector3(0.3f, 0.3f, 0.3f), new Vector3(0, 0.0009f, 0), new Vector3(-0.01f, 0, -0.01f), 1, 1, false);
+        this(new Mesh("rectangle"), new Material(), 0.2f, 2, new Vector3(0.3f, 0.3f, 0.3f), new Vector3(0, 0.0009f, 0), new Vector3(-0.01f, 0, -0.01f), 1, 1, false);
+//        this(Mesh.get("rectangle"), new Material(), 0.2f, 2, new Vector3(0.3f, 0.3f, 0.3f), new Vector3(0, 0.0009f, 0), new Vector3(-0.01f, 0, -0.01f), 1, 1, false);
     }
 
     /**
@@ -176,8 +172,8 @@ public class ParticleEmitter extends GameComponent {
 
         Collections.sort(particles, new Comparator<Particle>() {
             @Override
-            public int compare(Particle  p, Particle  p0){
-                return  p.compareTo(p0);
+            public int compare(Particle p, Particle p0) {
+                return p.compareTo(p0);
             }
         });
     }
@@ -214,11 +210,11 @@ public class ParticleEmitter extends GameComponent {
         }
 
         public void draw(Shader shader, Mesh m, Material mat, Graphics graphics) {
-            mat.setAlpha(expireTime / lifeTime);
+            mat.setFloat("alpha", expireTime / lifeTime);
             shader.bind();
             shader.updateUniforms(transform, mat, graphics);
             Aero.graphicsUtil.disableCullFace();
-            m.draw();
+            m.draw(GL11.GL_TRIANGLES);
             Aero.graphicsUtil.enableCullFace(GL11.GL_BACK);
         }
 
@@ -258,13 +254,13 @@ public class ParticleEmitter extends GameComponent {
 
         @Override
         public int compareTo(Object o) {
-            Particle other = (Particle)o;
+            Particle other = (Particle) o;
 
-            if(other.cameraDistance < this.cameraDistance){
+            if (other.cameraDistance < this.cameraDistance) {
                 return -1;
-            }else if(other.cameraDistance > this.cameraDistance){
+            } else if (other.cameraDistance > this.cameraDistance) {
                 return 1;
-            }else{
+            } else {
                 return 0;
             }
         }

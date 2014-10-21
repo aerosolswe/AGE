@@ -39,8 +39,8 @@ public class ShadowInfo {
         this.minVariance = minVariance;
 
         ByteBuffer buffer = Util.createByteBuffer(shadowMapSize * shadowMapSize * 4);
-        shadowMap = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, true, GL30.GL_COLOR_ATTACHMENT0);
-        shadowMapRenderTarget = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, true, GL30.GL_COLOR_ATTACHMENT0);
+        shadowMap = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, true, GL30.GL_COLOR_ATTACHMENT0);
+        shadowMapRenderTarget = new Texture(shadowMapSize, shadowMapSize, buffer, GL_TEXTURE_2D, GL_TEXTURE_2D, GL_LINEAR, GL30.GL_RG32F, GL_RGBA, true, GL30.GL_COLOR_ATTACHMENT0);
 
         gameObject = new GameObject();
         gameObject.getTransform().rotate(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(90)));

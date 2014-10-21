@@ -3,11 +3,10 @@ package com.theodore.aero.graphics.g2d.gui;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
-import com.theodore.aero.graphics.Texture;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.graphics.mesh.Mesh;
+import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
-import com.theodore.aero.graphics.shaders.ortho.OrthographicShader;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
@@ -48,11 +47,9 @@ public abstract class Widget {
 
         children = new ArrayList<Widget>();
 
-        orthoShader = OrthographicShader.getInstance();
-        mesh = Mesh.get("plane");
+        orthoShader = new BasicShader();
+        mesh = new Mesh("plane");
         transform.rotate(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(90)));
-//        transform.rotate(new Quaternion(new Vector3(0, 0, 1), (float) Math.toRadians(180.0f)));
-//        transform.rotate(new Quaternion(new Vector3(0, 1, 0), (float) Math.toRadians(180.0f)));
     }
 
     public void update(float delta) {
@@ -76,7 +73,7 @@ public abstract class Widget {
             if (material != null) {
                 orthoShader.bind();
                 orthoShader.updateUniforms(transform, material, graphics);
-                mesh.draw();
+                mesh.draw(GL11.GL_TRIANGLES);
             }
 
             for (Widget child : children) child.draw(graphics);

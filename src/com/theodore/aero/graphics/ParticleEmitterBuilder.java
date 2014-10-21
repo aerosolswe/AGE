@@ -2,11 +2,13 @@ package com.theodore.aero.graphics;
 
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.graphics.mesh.Mesh;
+import com.theodore.aero.graphics.mesh.Primitives;
 import com.theodore.aero.math.Vector3;
 
 public class ParticleEmitterBuilder {
 
-    private Mesh mesh = Mesh.get("rectangle");
+    private Mesh mesh = new Mesh("rectangle");
+    //    private Mesh mesh = Mesh.get("rectangle");
     private Material material = new Material();
 
     private Vector3 gravity = new Vector3(0, -9f, 0);
@@ -98,7 +100,7 @@ public class ParticleEmitterBuilder {
     public ParticleEmitterBuilder setSpawningRate(float spawningRate) {
         this.spawningRate = spawningRate;
 
-        return  this;
+        return this;
     }
 
     public float getParticleLifeTime() {

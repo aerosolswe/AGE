@@ -177,28 +177,6 @@ public class GraphicsUtil {
         return buffer;
     }
 
-    public void draw(int vertexBuffer, int indexBuffer, int indices) {
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, Vertex.SIZE * 4, 0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, Vertex.SIZE * 4, 12);
-        glVertexAttribPointer(2, 3, GL_FLOAT, false, Vertex.SIZE * 4, 20);
-        glVertexAttribPointer(3, 3, GL_FLOAT, false, Vertex.SIZE * 4, 32);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-        glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
-
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
-        glDisableVertexAttribArray(3);
-    }
-
-
     public void deleteBuffer(int buffer) {
         glDeleteBuffers(buffer);
     }
@@ -526,7 +504,7 @@ public class GraphicsUtil {
         glDeleteTextures(texture);
     }
 
-    public static String getOpenglVersion(){
+    public static String getOpenglVersion() {
         return glGetString(GL_VERSION);
     }
 }

@@ -1,9 +1,11 @@
 package com.theodore.aero.core;
 
+import com.theodore.aero.components.GameComponent;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Window;
 import com.theodore.aero.graphics.g2d.gui.Gui;
 import com.theodore.aero.graphics.g2d.gui.Label;
+import com.theodore.aero.graphics.shaders.Shader;
 
 import java.text.DecimalFormat;
 
@@ -17,8 +19,6 @@ public class Debug {
     private Label inputTimeLabel;
     private Label updateTimeLabel;
     private Label totalTimeLabel;
-
-    private Label visibleMeshLabel;
 
     private DecimalFormat format;
 
@@ -48,13 +48,12 @@ public class Debug {
         }
 
         if (Aero.input.getKeyDown(Input.KEY_F11)) {
-            Graphics.WIREFRAME_MODE = !Graphics.WIREFRAME_MODE;
+            Aero.graphics.setBoolean("wireframe", !Aero.graphics.getBoolean("wireframe"));
         }
-
     }
 
     public void update(float delta) {
-        fpsLabel.setText("Frames per seconds: " + Aero.graphics.getCurrentFps());
+        fpsLabel.setText("Frames per seconds: " + Aero.graphics.getInteger("fps"));
         renderTimeLabel.setText("Render time: " + format.format(Aero.renderTime) + " ms");
         syncTimeLabel.setText("Sync time: " + format.format(Aero.syncTime) + " ms");
         inputTimeLabel.setText("Input time: " + format.format(Aero.inputTime) + " ms");
@@ -64,7 +63,7 @@ public class Debug {
         gui.update(delta);
     }
 
-    public void draw() {
+    public void render() {
         gui.draw(Aero.graphics);
     }
 }

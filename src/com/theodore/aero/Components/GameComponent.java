@@ -7,7 +7,7 @@ import com.theodore.aero.graphics.shaders.Shader;
 
 public class GameComponent {
 
-    private GameObject parent;
+    protected GameObject parent;
 
     public void input(float delta) {
     }

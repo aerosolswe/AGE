@@ -2,26 +2,22 @@ package com.theodore.aero.graphics.shaders;
 
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
-import com.theodore.aero.graphics.Texture;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.math.Matrix4;
 
 public class BasicShader extends Shader {
 
-    private static final BasicShader instance = new BasicShader();
+    public BasicShader() {
+        super("basic");
 
-    public static BasicShader getInstance() {
-        return instance;
-    }
+        setAttribLocation("position", 0);
+        setAttribLocation("texCoord", 1);
 
-    private BasicShader() {
-        super();
-
-        addVertexShaderFromFile("basicrendering/basicVertex.vs");
-        addFragmentShaderFromFile("basicrendering/basicFragment.fs");
         compileShader();
 
-        addUniform("transform");
+        addUniform("diffuse");
+
+        addUniform("MVP");
         addUniform("color");
         addUniform("alpha");
         addUniform("textureRepeat");
@@ -35,15 +31,14 @@ public class BasicShader extends Shader {
         Matrix4 worldMatrix = transform.getTransformation();
         Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
 
-        if (material.getDiffuseTexture() != null)
-            material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
-        else
-            Texture.unbind();
+        material.getTexture("diffuse").bind(graphics.getSamplerSlot("diffuse"));
 
-        setUniform("transform", MVPMatrix);
-        setUniform("color", material.getColor());
-        setUniformf("alpha", material.getAlpha());
-        setUniformi("textureRepeat", material.getTextureRepeat());
+        setUniform("MVP", MVPMatrix);
+        setUniformi("textureRepeat", material.getInteger("textureRepeat"));
+        setUniform("color", material.getVector3("color"));
+        setUniformf("alpha", material.getFloat("alpha"));
+
+        setUniformi("diffuse", graphics.getSamplerSlot("diffuse"));
     }
 
 }

@@ -16,7 +16,7 @@ public class Bitmap {
 
     private static final HashMap<String, Bitmap> bitmaps = new HashMap<String, Bitmap>();
 
-    public static Bitmap load(File file, String name){
+    public static Bitmap load(File file, String name) {
         bitmaps.put(name, new Bitmap(file));
         return bitmaps.get(name);
     }

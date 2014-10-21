@@ -2,7 +2,8 @@ package com.theodore.aero.components;
 
 import com.theodore.aero.graphics.g3d.Attenuation;
 import com.theodore.aero.graphics.g3d.ShadowInfo;
-import com.theodore.aero.graphics.shaders.forward.ForwardSpotShader;
+import com.theodore.aero.graphics.shaders.ForwardSpotShader;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
@@ -39,7 +40,7 @@ public class SpotLight extends PointLight {
         super(color, intensity, attenuation, 0);
         this.cutoff = (float) Math.cos(viewAngle / 2);
 
-        setShader(ForwardSpotShader.getInstance());
+        setShader(new ForwardSpotShader());
         if (shadowMapPowerOf2 != 0) {
             setShadowInfo(
                     new ShadowInfo(

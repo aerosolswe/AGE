@@ -13,7 +13,7 @@ public class Button extends Widget {
         this.upTexture = upTexture;
         this.downTexture = downTexture;
 
-        material.setDiffuseTexture(upTexture);
+        material.setTexture("diffuse", upTexture);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class Button extends Widget {
     }
 
     public void setTexture(Texture texture) {
-        material.setDiffuseTexture(texture);
+        material.setTexture("diffuse", upTexture);
     }
 
 }

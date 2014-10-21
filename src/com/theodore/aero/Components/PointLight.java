@@ -1,9 +1,8 @@
 package com.theodore.aero.components;
 
 import com.theodore.aero.graphics.g3d.Attenuation;
-import com.theodore.aero.graphics.g3d.PointShadowInfo;
-import com.theodore.aero.graphics.shaders.deferred.DeferredPointShader;
-import com.theodore.aero.graphics.shaders.forward.ForwardPointShader;
+import com.theodore.aero.graphics.shaders.ForwardPointShader;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Vector3;
 
 public class PointLight extends BaseLight {
@@ -23,11 +22,7 @@ public class PointLight extends BaseLight {
 
         this.range = (float) ((-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a));
 
-        if(shadowSize != 0){
-            setPointShadowInfo(new PointShadowInfo(shadowSize));
-        }
-
-        setShader(ForwardPointShader.getInstance());
+        setShader(new ForwardPointShader());
     }
 
     public float getRange() {

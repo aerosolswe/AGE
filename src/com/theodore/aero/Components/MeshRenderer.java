@@ -4,45 +4,41 @@ import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.Shader;
+import org.lwjgl.opengl.GL11;
 
 public class MeshRenderer extends GameComponent {
 
-    private Mesh[] meshes;
-    private Material[] materials;
+    private Mesh mesh;
+    private Material material;
 
     public MeshRenderer(Mesh mesh, Material material) {
-        this.meshes = new Mesh[]{ mesh };
-        this.materials = new Material[]{ material };
-    }
-
-    public MeshRenderer(Mesh[] meshes, Material[] materials){
-        this.meshes = meshes;
-        this.materials = materials;
-
+        this.mesh = mesh;
+        this.material = material;
     }
 
     @Override
     public void render(Shader shader, Graphics graphics) {
         shader.bind();
-        for(int i = 0; i < meshes.length; i++){
-            shader.updateUniforms(getTransform(), materials[i], graphics);
-            meshes[i].draw();
-        }
+        material.getTexture("diffuse").bind(graphics.getSamplerSlot("diffuse"));
+        material.getTexture("normalMap").bind(graphics.getSamplerSlot("normalMap"));
+        material.getTexture("dispMap").bind(graphics.getSamplerSlot("dispMap"));
+        shader.updateUniforms(getTransform(), material, graphics);
+        mesh.draw(GL11.GL_TRIANGLES);
     }
 
-    public Mesh[] getMeshes() {
-        return meshes;
+    public Mesh getMesh() {
+        return mesh;
     }
 
-    public void setMeshes(Mesh[] meshes) {
-        this.meshes = meshes;
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
     }
 
-    public Material[] getMaterials() {
-        return materials;
+    public Material getMaterial() {
+        return material;
     }
 
-    public void setMaterials(Material[] materials) {
-        this.materials = materials;
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 }

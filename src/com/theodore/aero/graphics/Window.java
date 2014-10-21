@@ -27,6 +27,8 @@ public class Window {
     private static boolean sync = false;
     private static int maxFps = 3000;
 
+    private static boolean once = false;
+
     public static void createWindow(int width, int height, String title, boolean fullscreen, boolean vSync) throws LWJGLException {
         setDisplayMode(width, height, fullscreen);
         Display.create();
@@ -41,11 +43,14 @@ public class Window {
 
     public static void update() {
         if (isResized()) {
-            Aero.activeScreen.resized(getWidth(), getHeight());
-            glViewport(0, 0, getWidth(), getHeight());
-            if (Aero.graphics.displayTexture != null) {
+            if (!once) {
+                Aero.activeScreen.resized(getWidth(), getHeight());
+                glViewport(0, 0, getWidth(), getHeight());
                 Aero.graphics.initDisplay(getWidth(), getHeight());
+                once = true;
             }
+        } else {
+            once = false;
         }
     }
 
@@ -159,7 +164,7 @@ public class Window {
         return Display.getAvailableDisplayModes();
     }
 
-    public static void setFullscreen(boolean value){
+    public static void setFullscreen(boolean value) {
         try {
             Display.setFullscreen(value);
         } catch (LWJGLException e) {
@@ -193,9 +198,6 @@ public class Window {
                             }
                         }
 
-                        // if we've found a match for bpp and frequence against the
-                        // original display mode then it's probably best to go for this one
-                        // since it's most likely compatible with the monitor
                         if ((current.getBitsPerPixel() == Display.getDesktopDisplayMode().getBitsPerPixel()) &&
                                 (current.getFrequency() == Display.getDesktopDisplayMode().getFrequency())) {
                             targetDisplayMode = current;
@@ -220,20 +222,20 @@ public class Window {
         }
     }
 
-    public static void setIcon(String icon16, String icon32) {
+    public static void setIcon(File file) {
         try {
             ByteBuffer[] icons = new ByteBuffer[2];
-            icons[0] = loadIcon(icon16);
-            icons[1] = loadIcon(icon32);
+            icons[0] = loadIcon(file);
+            icons[1] = loadIcon(file);
             Display.setIcon(icons);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static ByteBuffer loadIcon(String filename) throws IOException {
+    public static ByteBuffer loadIcon(File file) throws IOException {
         try {
-            BufferedImage image = ImageIO.read(new File("res/default/textures/" + filename));
+            BufferedImage image = ImageIO.read(file);
 
             boolean hasAlpha = image.getColorModel().hasAlpha();
 

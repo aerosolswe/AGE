@@ -23,17 +23,15 @@ public class CubeMap {
     private int width;
     private int height;
 
-    public static final String DIRECTORY = "cubemaps/";
-
-    private int texCube;
+    private int id;
     private int framebuffer;
     private int depth;
 
-    public CubeMap(int width, int height){
+    public CubeMap(int width, int height) {
         this.width = width;
         this.height = height;
 
-        texCube = 0;
+        id = 0;
         framebuffer = 0;
         depth = 0;
 
@@ -54,15 +52,15 @@ public class CubeMap {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        texCube = glGenTextures();
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+        id = glGenTextures();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, id);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-        for (int i = 0 ; i < 6 ; i++) {
+        for (int i = 0; i < 6; i++) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
         }
 
@@ -84,15 +82,15 @@ public class CubeMap {
     }
 
     public CubeMap(File front, File back, File top, File bottom, File left, File right) {
-        glActiveTexture(Texture.CUBE_TEXTURE);
-        texCube = glGenTextures();
+//        glActiveTexture(Texture.CUBE_TEXTURE);
+        id = glGenTextures();
 
-        loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, front);
-        loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, back);
-        loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, top);
-        loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, bottom);
-        loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, left);
-        loadCubeMapSide(texCube, GL_TEXTURE_CUBE_MAP_POSITIVE_X, right);
+        loadCubeMapSide(id, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, front);
+        loadCubeMapSide(id, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, back);
+        loadCubeMapSide(id, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, top);
+        loadCubeMapSide(id, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, bottom);
+        loadCubeMapSide(id, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, left);
+        loadCubeMapSide(id, GL_TEXTURE_CUBE_MAP_POSITIVE_X, right);
     }
 
     public void loadCubeMapSide(int texture, int sideTarget, File side) {
@@ -136,35 +134,34 @@ public class CubeMap {
             e.printStackTrace();
             System.exit(1);
         }
-
     }
 
-    public void bindAsRenderTarget(){
+    public void bindAsRenderTarget() {
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glViewport(0, 0, width, height);
     }
 
-    public void bindForWriting(int face){
+    public void bindForWriting(int face) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, texCube, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, id, 0);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
     }
 
 
-    public void bindForReading(int textureUnit){
+    public void bindForReading(int textureUnit) {
         glActiveTexture(textureUnit);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, id);
         glViewport(0, 0, width, height);
     }
 
     public void bind(int unit) {
         glActiveTexture(unit);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texCube);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, id);
     }
 
     public int getTexCube() {
-        return texCube;
+        return id;
     }
 
 }

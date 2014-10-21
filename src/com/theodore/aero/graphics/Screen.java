@@ -2,14 +2,10 @@ package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.GameObject;
 import com.theodore.aero.core.ProfileTimer;
-import com.theodore.aero.graphics.g3d.SkyBox;
-import com.theodore.aero.graphics.g3d.SkyGradient;
 
 public abstract class Screen {
 
     private GameObject root;
-    private SkyBox skyBox;
-    private SkyGradient skyGradient;
 
     private ProfileTimer inputTimer;
     private ProfileTimer updateTimer;
@@ -40,7 +36,7 @@ public abstract class Screen {
     }
 
     public void render(Graphics graphics) {
-        graphics.fullRender(getRootGameObject(), skyGradient);
+        graphics.fullRender(getRootGameObject());
     }
 
     public void resized(int width, int height) {
@@ -48,6 +44,10 @@ public abstract class Screen {
 
     public void addObject(GameObject object) {
         getRootGameObject().addChild(object);
+    }
+
+    public void removeObject(GameObject object) {
+        getRootGameObject().removeChild(object);
     }
 
     private GameObject getRootGameObject() {
@@ -59,21 +59,5 @@ public abstract class Screen {
 
     public void setEngine() {
         getRootGameObject().setEngine();
-    }
-
-    public SkyBox getSkyBox() {
-        return skyBox;
-    }
-
-    public void setSkyBox(SkyBox skyBox) {
-        this.skyBox = skyBox;
-    }
-
-    public SkyGradient getSkyGradient() {
-        return skyGradient;
-    }
-
-    public void setSkyGradient(SkyGradient skyGradient) {
-        this.skyGradient = skyGradient;
     }
 }

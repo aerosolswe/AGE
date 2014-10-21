@@ -2,6 +2,8 @@ package com.theodore.aero.core;
 
 import com.theodore.aero.graphics.Vertex;
 import com.theodore.aero.math.Matrix4;
+import com.theodore.aero.math.Vector2;
+import com.theodore.aero.math.Vector3;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -26,6 +28,17 @@ public class Util {
         return BufferUtils.createByteBuffer(size);
     }
 
+    public static FloatBuffer createFlippedBuffer(Vertex[] vertices) {
+        FloatBuffer buffer = createFloatBuffer(vertices.length * Vertex.SIZE);
+
+        for (int i = 0; i < vertices.length; i++)
+            vertices[i].addToBuffer(buffer);
+
+        buffer.flip();
+
+        return buffer;
+    }
+
     public static IntBuffer createFlippedBuffer(int... values) {
         IntBuffer buffer = createIntBuffer(values.length);
         buffer.put(values);
@@ -34,12 +47,56 @@ public class Util {
         return buffer;
     }
 
-    public static FloatBuffer createFlippedBuffer(Vertex[] vertices) {
-        FloatBuffer buffer = createFloatBuffer(vertices.length * Vertex.SIZE);
+    public static IntBuffer createFlippedBuffer(Integer[] values) {
+        IntBuffer buffer = createIntBuffer(values.length);
 
-        for (int i = 0; i < vertices.length; i++)
-            vertices[i].addToBuffer(buffer);
+        for (int i = 0; i < values.length; i++) {
+            buffer.put(values[i]);
+        }
 
+        buffer.flip();
+
+        return buffer;
+    }
+
+    public static FloatBuffer createFlippedBuffer(Vector3[] values) {
+        FloatBuffer buffer = createFloatBuffer(values.length * 3);
+
+        for (int i = 0; i < values.length; i++) {
+            buffer.put(values[i].x);
+            buffer.put(values[i].y);
+            buffer.put(values[i].z);
+        }
+
+        buffer.flip();
+
+        return buffer;
+    }
+
+    public static FloatBuffer createFlippedBuffer(Vector2[] values) {
+        FloatBuffer buffer = createFloatBuffer(values.length * 2);
+
+        for (int i = 0; i < values.length; i++) {
+            buffer.put(values[i].x);
+            buffer.put(values[i].y);
+        }
+
+        buffer.flip();
+
+        return buffer;
+    }
+
+    public static FloatBuffer createFlippedBuffer(float... values) {
+        FloatBuffer buffer = createFloatBuffer(values.length);
+        buffer.put(values);
+        buffer.flip();
+
+        return buffer;
+    }
+
+    public static ByteBuffer createFlippedBuffer(byte... values) {
+        ByteBuffer buffer = createByteBuffer(values.length);
+        buffer.put(values);
         buffer.flip();
 
         return buffer;

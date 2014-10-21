@@ -11,6 +11,8 @@ public class GameObject {
     private ArrayList<GameObject> children;
     private ArrayList<GameComponent> components;
     private Transform transform;
+    private boolean renderLights = true;
+    private boolean renderShadows = true;
 
     public GameObject() {
         children = new ArrayList<GameObject>();
@@ -24,9 +26,29 @@ public class GameObject {
         child.getTransform().setParent(transform);
     }
 
+    public void removeChild(GameObject child){
+        children.remove(child);
+    }
+
+    public void removeChild(int index){
+        children.remove(index);
+    }
+
     public GameObject addComponent(GameComponent component) {
         components.add(component);
         component.setParent(this);
+
+        return this;
+    }
+
+    public GameObject removeComponent(GameComponent component) {
+        components.remove(component);
+
+        return this;
+    }
+
+    public GameObject removeComponent(int index) {
+        components.remove(index);
 
         return this;
     }
@@ -91,4 +113,19 @@ public class GameObject {
             child.setEngine();
     }
 
+    public boolean isRenderShadows() {
+        return renderShadows;
+    }
+
+    public void setRenderShadows(boolean renderShadows) {
+        this.renderShadows = renderShadows;
+    }
+
+    public boolean isRenderLights() {
+        return renderLights;
+    }
+
+    public void setRenderLights(boolean renderLights) {
+        this.renderLights = renderLights;
+    }
 }

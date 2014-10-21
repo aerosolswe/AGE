@@ -17,7 +17,7 @@ public class ProfileTimer {
     }
 
     public void startInvocation() {
-        startTime = Time.getTime();
+        startTime = Time.getDoubleTime();
     }
 
     public void stopInvocation() {
@@ -25,7 +25,7 @@ public class ProfileTimer {
             System.out.println("Error: stopInvocation called without ever calling startInvocation!");
         } else {
             invocations++;
-            totalTime += (Time.getTime() - startTime);
+            totalTime += (Time.getDoubleTime() - startTime);
             startTime = 0.0;
         }
     }

@@ -9,7 +9,7 @@ public class Frame extends Widget {
     public Frame(Texture texture, float x, float y, float width, float height) {
         super(x, y, width, height);
 
-        material.setDiffuseTexture(texture);
+        material.setTexture("diffuse", texture);
         this.texture = texture;
     }
 

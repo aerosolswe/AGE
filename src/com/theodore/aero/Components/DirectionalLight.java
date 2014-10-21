@@ -2,8 +2,8 @@ package com.theodore.aero.components;
 
 import com.theodore.aero.graphics.g3d.ShadowCameraTransform;
 import com.theodore.aero.graphics.g3d.ShadowInfo;
-import com.theodore.aero.graphics.shaders.deferred.DeferredDirectionalShader;
-import com.theodore.aero.graphics.shaders.forward.ForwardDirectionalShader;
+import com.theodore.aero.graphics.shaders.ForwardDirectionalShader;
+import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
@@ -40,7 +40,7 @@ public class DirectionalLight extends BaseLight {
 
         this.halfShadowArea = shadowArea / 2.0f;
 
-        setShader(ForwardDirectionalShader.getInstance());
+        setShader(new ForwardDirectionalShader());
         if (shadowMapPowerOf2 != 0) {
             setShadowInfo(
                     new ShadowInfo(

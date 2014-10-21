@@ -10,7 +10,7 @@ public class Font {
     private Vector3 color;
 
     public Font() {
-        this(Texture.get("font.png"));
+        this(new Texture("font.png"));
     }
 
     public Font(Texture texture) {
@@ -18,9 +18,8 @@ public class Font {
     }
 
     public Font(Texture texture, Vector3 color) {
-        material = new Material();
-        material.setDiffuseTexture(texture);
-        material.setColor(color);
+        material = new Material(texture);
+        material.setVector3("color", color);
         this.texture = texture;
         this.color = color;
     }

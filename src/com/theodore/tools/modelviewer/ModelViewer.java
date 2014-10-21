@@ -14,7 +14,6 @@ import com.theodore.aero.math.Vector3;
 import org.lwjgl.LWJGLException;
 
 
-
 public class ModelViewer extends Screen {
 
     private GameObject cameraObject;
@@ -28,7 +27,7 @@ public class ModelViewer extends Screen {
     public void init() {
         super.init();
 
-        Aero.graphics.setAmbientLight(new Vector3(0.8f, 0.8f, 0.8f));
+        Aero.graphics.setVector3("ambientLight", new Vector3(0.8f, 0.8f, 0.8f));
 
         Aero.graphics.currentRenderingState = RenderingState.SIMPLE;
 
@@ -51,19 +50,19 @@ public class ModelViewer extends Screen {
     public void input(float delta) {
         super.input(delta);
 
-        if(Aero.input.getKeyDown(Input.KEY_ESCAPE)){
-            if(!Aero.input.isMouseGrabbed()){
+        if (Aero.input.getKeyDown(Input.KEY_ESCAPE)) {
+            if (!Aero.input.isMouseGrabbed()) {
                 System.exit(0);
             }
         }
 
-        if(Aero.input.getKeyDown(Input.KEY_F1)){
+        if (Aero.input.getKeyDown(Input.KEY_F1)) {
             String m = "res/modelviewer/models/";
             String t = "res/modelviewer/textures/";
-            modelObject.addComponent(new MeshRenderer(
+            /*modelObject.addComponent(new MeshRenderer(
                     new Mesh[]{ Mesh.get(m + "o_backpack.obj"), Mesh.get(m+"o_body.obj"), Mesh.get(m+"o_armshead.obj") },
                     new Material[]{ new Material(Texture.get(t+"o_backpack.png"), Texture.get(t+"o_backpack_normal.png")), new Material(Texture.get(t+"o_body.png"), Texture.get(t+"o_body_normal.png")), new Material(Texture.get(t+"o_headarms.png"), Texture.get(t+"o_headarms_normal.png")) }
-            ));
+            ));*/
         }
 
         debugger.input(delta);
@@ -81,7 +80,7 @@ public class ModelViewer extends Screen {
     public void render(Graphics graphics) {
         super.render(graphics);
 
-        debugger.draw();
+        debugger.render();
         gui.draw(graphics);
     }
 }

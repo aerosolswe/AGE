@@ -1,7 +1,6 @@
 package com.theodore.aero.components;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.graphics.g3d.PointShadowInfo;
 import com.theodore.aero.graphics.g3d.ShadowCameraTransform;
 import com.theodore.aero.graphics.g3d.ShadowInfo;
 import com.theodore.aero.graphics.shaders.Shader;
@@ -14,13 +13,11 @@ public class BaseLight extends GameComponent {
     private float intensity;
     private Shader shader;
     private ShadowInfo shadowInfo;
-    private PointShadowInfo pointShadowInfo;
 
     public BaseLight(Vector3 color, float intensity) {
         this.color = color;
         this.intensity = intensity;
         shadowInfo = null;
-        pointShadowInfo = null;
     }
 
     public ShadowCameraTransform calcShadowCameraTransform(Vector3 mainCameraPos, Quaternion mainCameraRotation) {
@@ -43,14 +40,6 @@ public class BaseLight extends GameComponent {
 
     protected void setShadowInfo(ShadowInfo shadowInfo) {
         this.shadowInfo = shadowInfo;
-    }
-
-    public PointShadowInfo getPointShadowInfo() {
-        return pointShadowInfo;
-    }
-
-    protected void setPointShadowInfo(PointShadowInfo pointShadowInfo) {
-        this.pointShadowInfo = pointShadowInfo;
     }
 
     protected void setShader(Shader shader) {

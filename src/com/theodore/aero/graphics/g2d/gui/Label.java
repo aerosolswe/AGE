@@ -4,8 +4,8 @@ import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Texture;
-import com.theodore.aero.graphics.Vertex;
 import com.theodore.aero.graphics.mesh.Mesh;
+import com.theodore.aero.graphics.mesh.meshLoading.IndexedModel;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 import org.lwjgl.opengl.GL11;
@@ -21,12 +21,12 @@ public class Label extends Widget {
     private float xOffset;
 
     public Label(String text, float x, float y, float width, float height, float xOffset) {
-        this(text, Texture.get("fontsheet"), x, y, width, height, xOffset);
+        this(text, new Texture("fontsheet"), x, y, width, height, xOffset);
     }
 
     public Label(String text, Texture texture, float x, float y, float width, float height, float xOffset) {
         super(x, y, width * 2, height * 2);
-        material.setDiffuseTexture(texture);
+        material.setTexture("diffuse", texture);
 
         this.text = text;
 
@@ -37,16 +37,30 @@ public class Label extends Widget {
         for (int i = 0; i < meshes.length; i++) {
             Vector2[] uv = calculateUVMapping(i, 16, 16);
 
-            Vertex[] vertices = new Vertex[]{
+            /*Vertex[] vertices = new Vertex[]{
                     new Vertex(new Vector3(-0.5f, -0.5f, 0), uv[1]), //01
                     new Vertex(new Vector3(-0.5f, 0.5f, 0), uv[0]),  //00
                     new Vertex(new Vector3(0.5f, 0.5f, 0), uv[2]),   //10
                     new Vertex(new Vector3(0.5f, -0.5f, 0), uv[3])}; //11
 
             int[] indices = new int[]{0, 1, 2,
-                    0, 2, 3};
+                    0, 2, 3};*/
 
-            meshes[i] = Mesh.customMesh("text", vertices, indices, false, false);
+            IndexedModel model = new IndexedModel();
+
+            model.addVertex(new Vector3(-0.5f, -0.5f, 0));
+            model.addTexCoord(uv[1]);
+            model.addVertex(new Vector3(-0.5f, 0.5f, 0));
+            model.addTexCoord(uv[0]);
+            model.addVertex(new Vector3(0.5f, 0.5f, 0));
+            model.addTexCoord(uv[2]);
+            model.addVertex(new Vector3(0.5f, -0.5f, 0));
+            model.addTexCoord(uv[3]);
+            model.addFace(0, 1, 2);
+            model.addFace(0, 2, 3);
+
+            meshes[i] = new Mesh("text" + i, model.finish());
+//            meshes[i] = Mesh.customMesh("text", vertices, indices, false, false);
 
             transform[i] = new Transform();
             transform[i].setPosition(new Vector3(x, y + height / 2, 0));
@@ -84,7 +98,7 @@ public class Label extends Widget {
                 transform[ascii].setPosition(pos);
 
                 orthoShader.updateUniforms(transform[ascii], material, Aero.graphics);
-                meshes[ascii].draw();
+                meshes[ascii].draw(GL11.GL_TRIANGLES);
             }
 
             for (Widget child : children) child.draw(graphics);
