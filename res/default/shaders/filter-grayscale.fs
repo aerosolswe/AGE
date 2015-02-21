@@ -6,5 +6,5 @@ out vec4 fragColor;
 uniform sampler2D filterTexture;
 
 void main(){
-    fragColor = texture2D(filterTexture, texCoord0) * 5.5;
+    fragColor = texture(filterTexture, texCoord0) * 5.5;
 }

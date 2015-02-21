@@ -32,7 +32,7 @@ public class SkyBox extends Sky {
     public SkyBox(File front, File back, File top, File bottom, File left, File right) {
         this.shader = new SkyBoxShader();
 
-        meshRenderer = new MeshRenderer(new Mesh("sphere"), new Material(new Texture(new File[]{ front, back, top, bottom, left, right })));
+        meshRenderer = new MeshRenderer(new Mesh("sphere"), new Material(new Texture(new File[]{front, back, top, bottom, left, right})));
         GameObject gameObject = new GameObject().addComponent(meshRenderer);
 
         gameObject.getTransform().setScale(new Vector3(1000, 1000, 1000));
@@ -45,11 +45,11 @@ public class SkyBox extends Sky {
 
         Aero.graphicsUtil.enableCullFace(GL_FRONT);
         Aero.graphicsUtil.setDepthFunc(GL_LEQUAL);
-        Aero.graphicsUtil.disableBlending();
+//        Aero.graphicsUtil.disableBlending();
 
         Camera tmp = graphics.getMainCamera();
 
-        meshRenderer.render(shader, graphics);
+        meshRenderer.renderBasic(shader, graphics);
 
         graphics.setMainCamera(tmp);
 

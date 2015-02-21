@@ -179,8 +179,8 @@ public class ParticleEmitter extends GameComponent {
     }
 
     @Override
-    public void render(Shader shader, Graphics graphics) {
-        super.render(shader, graphics);
+    public void renderBasic(Shader shader, Graphics graphics) {
+        super.renderBasic(shader, graphics);
 
         for (int i = 0; i < particles.size(); i++) {
             Particle particle = particles.get(i);

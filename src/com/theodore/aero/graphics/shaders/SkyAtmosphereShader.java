@@ -10,7 +10,7 @@ import com.theodore.aero.math.Vector3;
 public class SkyAtmosphereShader extends Shader {
 
     public SkyAtmosphereShader() {
-        super("skyatmosphere");
+        super("atmosphere-sky");
 
         setAttribLocation("position", 0);
         setAttribLocation("texCoord", 1);

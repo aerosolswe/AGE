@@ -3,6 +3,7 @@ package com.theodore.aero.components;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Input;
 import com.theodore.aero.graphics.Window;
+import com.theodore.aero.input.Mapping;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 
@@ -16,41 +17,40 @@ public class FreeLook extends GameComponent {
 
     private boolean mouseLocked = false;
     private float sensitivity;
-    private int unlockMouseKey;
 
     public FreeLook(float sensitivity) {
-        this(sensitivity, Input.KEY_ESCAPE);
-    }
-
-    public FreeLook(float sensitivity, int unlockMouseKey) {
         this.sensitivity = sensitivity;
-        this.unlockMouseKey = unlockMouseKey;
+
+        Aero.inputManager.addMouseMap("unlockMouse", Input.Buttons.MIDDLE);
     }
 
     @Override
     public void input(float delta) {
-        Vector2 centerPosition = new Vector2(Window.getWidth() / 2, Window.getHeight() / 2);
+        Vector2 centerPosition = new Vector2(Aero.window.getWidth() / 2, Aero.window.getHeight() / 2);
 
-        if (Aero.input.getKeyUp(unlockMouseKey)) {
-            Aero.input.setMouseGrabbed(true);
+        Mapping unlockMapping = Aero.inputManager.getMapping("unlockMouse");
+
+        if (unlockMapping.isReleased() && mouseLocked) {
+            Aero.input.showCursor();
             mouseLocked = false;
-        }
-        if (Aero.input.getMouseDown(2)) {
-            Aero.input.setMousePosition(centerPosition);
-            Aero.input.setMouseGrabbed(false);
+        } else if (unlockMapping.isReleased()) {
+            Aero.input.setCursorPosition(centerPosition);
+            Aero.input.hideCursor();
             mouseLocked = true;
         }
 
         if (mouseLocked) {
-            Vector2 deltaPos = Aero.input.getMousePosition().sub(centerPosition);
+            Vector2 deltaPos = Aero.input.getCursorPosition().sub(centerPosition);
 
             boolean rotY = deltaPos.getX() != 0;
             boolean rotX = deltaPos.getY() != 0;
 
-            if (rotY)
-                getTransform().rotate(Y_AXIS, (float) Math.toRadians(deltaPos.getX() * sensitivity));
+            if (rotY) {
+                float amt = (float) Math.toRadians(deltaPos.getX() * sensitivity);
+                getTransform().rotate(Y_AXIS, amt);
+            }
             if (rotX) {
-                float amt = -deltaPos.getY() * sensitivity;
+                float amt = deltaPos.getY() * sensitivity;
                 if (amt + upAngle > -MIN_LOOK_ANGLE) {
                     getTransform().rotate(getTransform().getRotation().getRight(), (float) Math.toRadians(-MIN_LOOK_ANGLE - upAngle));
                     upAngle = -MIN_LOOK_ANGLE;
@@ -64,7 +64,7 @@ public class FreeLook extends GameComponent {
             }
 
             if (rotY || rotX)
-                Aero.input.setMousePosition(centerPosition);
+                Aero.input.setCursorPosition(centerPosition);
         }
     }
 }

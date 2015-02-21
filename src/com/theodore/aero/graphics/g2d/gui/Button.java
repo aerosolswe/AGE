@@ -1,6 +1,7 @@
 package com.theodore.aero.graphics.g2d.gui;
 
 import com.theodore.aero.graphics.Texture;
+import com.theodore.aero.math.Vector2;
 
 public class Button extends Widget {
 
@@ -29,7 +30,7 @@ public class Button extends Widget {
     }
 
     public void setTexture(Texture texture) {
-        material.setTexture("diffuse", upTexture);
+        material.setTexture("diffuse", texture);
     }
 
 }

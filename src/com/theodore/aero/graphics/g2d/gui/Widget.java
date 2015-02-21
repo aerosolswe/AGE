@@ -1,12 +1,14 @@
 package com.theodore.aero.graphics.g2d.gui;
 
 import com.theodore.aero.core.Aero;
+import com.theodore.aero.core.Input;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.shaders.BasicShader;
 import com.theodore.aero.graphics.shaders.Shader;
+import com.theodore.aero.input.Mapping;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
@@ -36,6 +38,8 @@ public abstract class Widget {
 
     protected boolean visible = true;
 
+    private Vector3 pos = new Vector3();
+
     public Widget(float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
@@ -50,19 +54,29 @@ public abstract class Widget {
         orthoShader = new BasicShader();
         mesh = new Mesh("plane");
         transform.rotate(new Quaternion(new Vector3(1, 0, 0), (float) Math.toRadians(90)));
+
+        Aero.inputManager.addMouseMap("widgetLeftButton", Input.Buttons.LEFT);
     }
 
     public void update(float delta) {
         transform.setScale(new Vector3(width / 2, height / 2, height / 2));
 
+        Mapping leftButton = Aero.inputManager.getMapping("widgetLeftButton");
+        if (mouseHovered) {
+            mousePressed = leftButton.isPressed();
+        }
+
+        mouseReleased = leftButton.isReleased();
+
         if (parent != null) {
-            Vector3 pos = new Vector3(parent.getX() + ((this.x + width) - (width / 2)), parent.getY() + ((this.y + height) - (height / 2)), 0);
+            pos.set(parent.getX() + ((this.x + width) - (width / 2)), parent.getY() + ((this.y + height) - (height / 2)), 0);
             transform.setPosition(pos);
 
-            mousePressed = Aero.input.getMouseDown(0) && isInside(Aero.input.getMousePosition());
-            mouseReleased = Aero.input.getMouseUp(0);
-            mouseClicked = Aero.input.getMouse(0) && isInside(Aero.input.getMousePosition());
-            mouseHovered = isInside(Aero.input.getMousePosition());
+            float mouseX = Aero.input.getCursorPosition().x;
+            float mouseY = Aero.input.getCursorPosition().y;
+            mouseY = Aero.window.getHeight() - mouseY;
+
+            mouseHovered = isInside(mouseX, mouseY);
         }
 
         for (Widget child : children) child.update(delta);
@@ -100,8 +114,13 @@ public abstract class Widget {
     }
 
     public boolean isInside(float x, float y) {
-        float dx = parent.getX() + this.x;
-        float dy = parent.getY() + this.y;
+        float dx = this.x;
+        float dy = this.y;
+
+        if (parent != null) {
+            dx = parent.getX() + this.x;
+            dy = parent.getY() + this.y;
+        }
 
         return x > dx && x < dx + this.width &&
                 y > dy && y < dy + this.height;
@@ -129,6 +148,10 @@ public abstract class Widget {
 
     public Widget getParent() {
         return parent;
+    }
+
+    public ArrayList<Widget> getChildren() {
+        return children;
     }
 
     public void addChild(Widget widget) {

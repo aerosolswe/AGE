@@ -12,7 +12,7 @@ public class PointLight extends BaseLight {
     private Attenuation attenuation;
     private float range;
 
-    public PointLight(Vector3 color, float intensity, Attenuation attenuation, int shadowSize) {
+    public PointLight(Vector3 color, float intensity, Attenuation attenuation) {
         super(color, intensity);
         this.attenuation = attenuation;
 

@@ -1,11 +1,13 @@
 package com.theodore.aero.graphics.g2d.gui;
 
 import com.theodore.aero.core.Aero;
+import com.theodore.aero.core.Input;
 import com.theodore.aero.core.Transform;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.Texture;
 import com.theodore.aero.graphics.mesh.Mesh;
 import com.theodore.aero.graphics.mesh.meshLoading.IndexedModel;
+import com.theodore.aero.math.MathUtils;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 import org.lwjgl.opengl.GL11;
@@ -37,15 +39,6 @@ public class Label extends Widget {
         for (int i = 0; i < meshes.length; i++) {
             Vector2[] uv = calculateUVMapping(i, 16, 16);
 
-            /*Vertex[] vertices = new Vertex[]{
-                    new Vertex(new Vector3(-0.5f, -0.5f, 0), uv[1]), //01
-                    new Vertex(new Vector3(-0.5f, 0.5f, 0), uv[0]),  //00
-                    new Vertex(new Vector3(0.5f, 0.5f, 0), uv[2]),   //10
-                    new Vertex(new Vector3(0.5f, -0.5f, 0), uv[3])}; //11
-
-            int[] indices = new int[]{0, 1, 2,
-                    0, 2, 3};*/
-
             IndexedModel model = new IndexedModel();
 
             model.addVertex(new Vector3(-0.5f, -0.5f, 0));
@@ -69,39 +62,26 @@ public class Label extends Widget {
     }
 
     @Override
-    public void update(float delta) {
-        if (parent != null) {
-            mousePressed = Aero.input.getMouseDown(0) && isInside(Aero.input.getMousePosition());
-            mouseReleased = Aero.input.getMouseUp(0);
-            mouseClicked = Aero.input.getMouse(0) && isInside(Aero.input.getMousePosition());
-            mouseHovered = isInside(Aero.input.getMousePosition());
-
-            if (mousePressed) {
-                System.out.println("pressed on label");
-            }
-        }
-
-        for (Widget child : children) child.update(delta);
-    }
-
-    @Override
     public void draw(Graphics graphics) {
         if (visible) {
-            orthoShader.bind();
+            if (material != null) {
+                orthoShader.bind();
 
-            char[] characters = text.toCharArray();
-            for (int i = 0; i < characters.length; i++) {
-                int ascii = text.charAt(i);
+                char[] characters = text.toCharArray();
+                for (int i = 0; i < characters.length; i++) {
+                    int ascii = text.charAt(i);
 
-                transform[ascii].setScale(new Vector3(width / 2, height / 2, height / 2));
-                Vector3 pos = new Vector3(parent.getX() + (((x + (i * xOffset) + width) - (width / 2)) - (xOffset * 2)), parent.getY() + (((this.y + height) - (height / 2)) - (height / 4)), 0);
-                transform[ascii].setPosition(pos);
+                    transform[ascii].setScale(new Vector3(width / 2, height / 2, height / 2));
+                    Vector3 pos = new Vector3(parent.getX() + (((x + (i * xOffset) + width) - (width / 2)) - (xOffset * 2)), parent.getY() + (((this.y + height) - (height / 2)) - (height / 4)), 0);
+                    transform[ascii].setPosition(pos);
 
-                orthoShader.updateUniforms(transform[ascii], material, Aero.graphics);
-                meshes[ascii].draw(GL11.GL_TRIANGLES);
+                    orthoShader.updateUniforms(transform[ascii], material, Aero.graphics);
+                    meshes[ascii].draw(GL11.GL_TRIANGLES);
+                }
             }
 
             for (Widget child : children) child.draw(graphics);
+
         }
     }
 
@@ -128,11 +108,45 @@ public class Label extends Widget {
 
     @Override
     public boolean isInside(float x, float y) {
-        float dx = parent.getX() + this.x;
+        float dx = parent.getX() + (this.x - (xOffset * 2));
         float dy = parent.getY() + this.y;
 
-        return x > dx && x < (dx + ((this.width / 5) * text.length())) &&
-                y > dy && y < dy + this.height / 2;
+        float totalWidth = getWidth(text, 0, text.toCharArray().length);
+
+        return x > dx && x < dx + totalWidth &&
+                y > dy && y < dy + (this.height / 2);
+    }
+
+    public float getWidth(CharSequence str, int start, int end) {
+        int width = 0;
+        while (start < end) {
+            char ch = str.charAt(start++);
+            if (ch == '[') {
+                if (!(start < end && str.charAt(start) == '[')) { // non escaped '['
+                    while (start < end && str.charAt(start) != ']')
+                        start++;
+                    start++;
+                    continue;
+                }
+                start++;
+            }
+            width += xOffset;
+        }
+        while (start < end) {
+            char ch = str.charAt(start++);
+            if (ch == '[') {
+                if (!(start < end && str.charAt(start) == '[')) { // non escaped '['
+                    while (start < end && str.charAt(start) != ']')
+                        start++;
+                    start++;
+                    continue;
+                }
+                start++;
+            }
+            width += xOffset;
+        }
+
+        return width;
     }
 
     public String getText() {

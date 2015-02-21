@@ -10,7 +10,7 @@ import com.theodore.aero.graphics.shaders.Shader;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
-import com.theodore.aero.resourceManagement.MappedValues;
+import com.theodore.aero.resources.MappedValues;
 
 public abstract class Filter extends MappedValues {
 
@@ -19,7 +19,7 @@ public abstract class Filter extends MappedValues {
     protected void applyFilter(Shader filter, Texture source, Texture dest, GameObject object, Camera altCamera, boolean unbind) {
         assert (source != dest);
         if (dest == null)
-            Window.bindAsRenderTarget();
+            Aero.window.bindAsRenderTarget();
         else
             dest.bindAsRenderTarget();
 
@@ -35,9 +35,9 @@ public abstract class Filter extends MappedValues {
         graphics.setMainCamera(altCamera);
 
         Aero.graphicsUtil.clearDepth();
-        object.renderAll(filter, graphics);
+        object.renderAllBasic(filter, graphics);
 
-        if(unbind)
+        if (unbind)
             filter.updateTextureUniform("filterTexture", 0);
 
         graphics.setMainCamera(tmp);

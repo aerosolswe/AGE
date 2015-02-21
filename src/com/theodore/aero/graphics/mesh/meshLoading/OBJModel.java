@@ -92,43 +92,43 @@ public class OBJModel {
             Integer modelVertexIndex = resultIndexMap.get(currentIndex);
 
             if (modelVertexIndex == null) {
-                modelVertexIndex = result.getPositions().size();
+                modelVertexIndex = result.positions.size();
                 resultIndexMap.put(currentIndex, modelVertexIndex);
 
-                result.getPositions().add(currentPosition);
-                result.getTexCoords().add(currentTexCoord);
+                result.positions.add(currentPosition);
+                result.texCoords.add(currentTexCoord);
                 if (hasNormals)
-                    result.getNormals().add(currentNormal);
+                    result.normals.add(currentNormal);
             }
 
             Integer normalModelIndex = normalIndexMap.get(currentIndex.getVertexIndex());
 
             if (normalModelIndex == null) {
-                normalModelIndex = normalModel.getPositions().size();
+                normalModelIndex = normalModel.positions.size();
                 normalIndexMap.put(currentIndex.getVertexIndex(), normalModelIndex);
 
-                normalModel.getPositions().add(currentPosition);
-                normalModel.getTexCoords().add(currentTexCoord);
-                normalModel.getNormals().add(currentNormal);
-                normalModel.getTangents().add(new Vector3(0, 0, 0));
+                normalModel.positions.add(currentPosition);
+                normalModel.texCoords.add(currentTexCoord);
+                normalModel.normals.add(currentNormal);
+                normalModel.tangents.add(new Vector3(0, 0, 0));
             }
 
-            result.getIndices().add(modelVertexIndex);
-            normalModel.getIndices().add(normalModelIndex);
+            result.indices.add(modelVertexIndex);
+            normalModel.indices.add(normalModelIndex);
             indexMap.put(modelVertexIndex, normalModelIndex);
         }
 
         if (!hasNormals) {
             normalModel.calcNormals();
 
-            for (int i = 0; i < result.getPositions().size(); i++)
-                result.getNormals().add(normalModel.getNormals().get(indexMap.get(i)));
+            for (int i = 0; i < result.positions.size(); i++)
+                result.normals.add(normalModel.normals.get(indexMap.get(i)));
         }
 
         normalModel.calcTangents();
 
-        for (int i = 0; i < result.getPositions().size(); i++)
-            result.getTangents().add(normalModel.getTangents().get(indexMap.get(i)));
+        for (int i = 0; i < result.positions.size(); i++)
+            result.tangents.add(normalModel.tangents.get(indexMap.get(i)));
 
         return result;
     }

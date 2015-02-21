@@ -10,17 +10,23 @@ public class PhysicsObject {
     private Vector3 oldPosition;
     private Vector3 velocity;
 
-    public PhysicsObject(Collider collider, Vector3 velocity) {
+    private float gravity = 0;
+    private float mass = 1;
+    private float restitution = 0.3f;
+
+    public PhysicsObject(Collider collider) {
         this.collider = collider;
         this.position = collider.getPosition();
         this.oldPosition = position;
-        this.velocity = velocity;
+        this.velocity = new Vector3();
     }
 
     public void update(float delta) {
-        position.x += velocity.x * delta;
-        position.y += velocity.y * delta;
-        position.z += velocity.z * delta;
+        position.x = position.x + velocity.x * delta;
+        position.y = position.y + velocity.y * delta;
+        position.z = position.z + velocity.z * delta;
+
+        velocity.y += (gravity * mass);
     }
 
     public Collider getCollider() {
@@ -45,5 +51,29 @@ public class PhysicsObject {
 
     public void setVelocity(Vector3 velocity) {
         this.velocity = velocity;
+    }
+
+    public float getGravity() {
+        return gravity;
+    }
+
+    public void setGravity(float gravity) {
+        this.gravity = gravity;
+    }
+
+    public float getMass() {
+        return mass;
+    }
+
+    public void setMass(float mass) {
+        this.mass = mass;
+    }
+
+    public float getRestitution() {
+        return restitution;
+    }
+
+    public void setRestitution(float restitution) {
+        this.restitution = restitution;
     }
 }

@@ -15,7 +15,7 @@ public class Plane extends Collider {
 
     public IntersectData intersectBoundingSphere(BoundingSphere other) {
         float distanceFromSphereCenter = Math.abs(normal.dot(other.getPosition()) + distance);
-        float distanceFromSphere = distanceFromSphereCenter - other.getRadius();
+        float distanceFromSphere = distanceFromSphereCenter - other.radius;
 
         boolean collision = distanceFromSphere < 0;
         Vector3 direction = normal.mul(distanceFromSphere);

@@ -1,6 +1,7 @@
 package com.theodore.aero.graphics.mesh.meshLoading;
 
 public class OBJIndex {
+
     private int vertexIndex;
     private int texCoordIndex;
     private int normalIndex;

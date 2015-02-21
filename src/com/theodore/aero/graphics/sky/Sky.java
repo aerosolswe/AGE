@@ -3,7 +3,7 @@ package com.theodore.aero.graphics.sky;
 import com.theodore.aero.components.MeshRenderer;
 import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.shaders.Shader;
-import com.theodore.aero.resourceManagement.MappedValues;
+import com.theodore.aero.resources.MappedValues;
 
 public abstract class Sky extends MappedValues {
 

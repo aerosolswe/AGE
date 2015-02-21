@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 public class IndexedModel {
 
-    private ArrayList<Vector3> positions;
-    private ArrayList<Vector2> texCoords;
-    private ArrayList<Vector3> normals;
-    private ArrayList<Vector3> tangents;
-    private ArrayList<Integer> indices;
+    public ArrayList<Vector3> positions;
+    public ArrayList<Vector2> texCoords;
+    public ArrayList<Vector3> normals;
+    public ArrayList<Vector3> tangents;
+    public ArrayList<Integer> indices;
 
     public IndexedModel() {
         positions = new ArrayList<Vector3>();
@@ -143,23 +143,4 @@ public class IndexedModel {
             tangents.get(i).set(tangents.get(i).normalized());
     }
 
-    public ArrayList<Vector3> getPositions() {
-        return positions;
-    }
-
-    public ArrayList<Vector2> getTexCoords() {
-        return texCoords;
-    }
-
-    public ArrayList<Vector3> getNormals() {
-        return normals;
-    }
-
-    public ArrayList<Vector3> getTangents() {
-        return tangents;
-    }
-
-    public ArrayList<Integer> getIndices() {
-        return indices;
-    }
 }

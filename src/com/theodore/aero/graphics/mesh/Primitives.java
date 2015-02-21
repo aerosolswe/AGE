@@ -3,7 +3,6 @@ package com.theodore.aero.graphics.mesh;
 import com.theodore.aero.graphics.mesh.meshLoading.IndexedModel;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
-import org.lwjgl.util.glu.Sphere;
 
 public class Primitives {
 
@@ -41,7 +40,8 @@ public class Primitives {
         return model.finish();
     }
 
-    public static IndexedModel dome(float radius, float yOffset){
+    // TODO: Finish the dome
+    public static IndexedModel dome(float radius, float yOffset) {
         IndexedModel model = new IndexedModel();
 
         // Marco - skydome generator that only creates what is necessary
@@ -54,29 +54,29 @@ public class Primitives {
         int segments = 20;
         // set vertex count and index count
 
-        float deltaRingAngle = ((float)Math.PI / rings);
-        float deltaSegAngle = (2.0f * (float)Math.PI / segments);
+        float deltaRingAngle = ((float) Math.PI / rings);
+        float deltaSegAngle = (2.0f * (float) Math.PI / segments);
 
-        int verticeIndex = 0 ;
+        int verticeIndex = 0;
         // Generate the group of rings for the sphere
 
-        for( int ring = 0; ring < rings + 1 ; ring++ ){
-            float r0 = (float)Math.sin(ring * deltaRingAngle);
-            float y0 = (float)Math.cos(ring * deltaRingAngle);
+        for (int ring = 0; ring < rings + 1; ring++) {
+            float r0 = (float) Math.sin(ring * deltaRingAngle);
+            float y0 = (float) Math.cos(ring * deltaRingAngle);
 
             // Generate the group of segments for the current ring
 
-            for(int seg = 0; seg < segments + 1 ; seg++){
-                float x0 = r0 * (float)Math.sin(seg * deltaSegAngle);
-                float z0 = r0 * (float)Math.cos(seg * deltaSegAngle);
+            for (int seg = 0; seg < segments + 1; seg++) {
+                float x0 = r0 * (float) Math.sin(seg * deltaSegAngle);
+                float z0 = r0 * (float) Math.cos(seg * deltaSegAngle);
 
                 // Add one vertices to the strip which makes up the sphere
 
                 model.addVertex(new Vector3(x0 * radius, y0 * radius - yOffset, z0 * radius));
                 // add two indices except for last ring
 
-                if (ring != rings){
-                    model.addFace(verticeIndex  + (segments + 1), verticeIndex, verticeIndex + (segments + 1));
+                if (ring != rings) {
+                    model.addFace(verticeIndex + (segments + 1), verticeIndex, verticeIndex + (segments + 1));
                     verticeIndex++;
                 }
 

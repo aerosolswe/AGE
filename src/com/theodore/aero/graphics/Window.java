@@ -1,31 +1,175 @@
 package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.Aero;
-import com.theodore.aero.core.Util;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
+import com.theodore.aero.math.Vector2;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
-import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.glfw.*;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
-import static org.lwjgl.opengl.GL30.GL_DRAW_FRAMEBUFFER;
-import static org.lwjgl.opengl.GL30.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
 
-    private static PixelFormat pf = new PixelFormat();
+    public long window;
+    public String title = "";
+    private GLFWErrorCallback errorCallback;
+    private GLFWWindowSizeCallback windowSizeCallback;
 
-    private static boolean sync = false;
-    private static int maxFps = 3000;
+    private boolean init = false;
+
+    public Window(String title, int width, int height, boolean fullscreen, boolean vsync, int samples) {
+        this.title = title;
+
+        glfwSetErrorCallback(errorCallback = errorCallbackPrint(System.err));
+
+        if (glfwInit() != GL11.GL_TRUE)
+            throw new IllegalStateException("Unable to initialize GLFW");
+
+        glfwDefaultWindowHints();
+//        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+//        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+        glfwWindowHint(GLFW_SAMPLES, samples);
+
+        if (!fullscreen) {
+            window = glfwCreateWindow(width, height, title, NULL, NULL);
+
+            ByteBuffer vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            glfwSetWindowPos(
+                    window,
+                    (GLFWvidmode.width(vidmode) - width) / 2,
+                    (GLFWvidmode.height(vidmode) - height) / 2
+            );
+        } else {
+            window = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), NULL);
+        }
+
+        if (window == GL_FALSE) {
+            System.err.println("[Window] Unable to create window");
+            System.exit(1);
+        }
+
+        makeContextCurrent();
+        if (vsync)
+            glfwSwapInterval(1);
+        else
+            glfwSwapInterval(0);
+        glfwShowWindow(window);
+        createContextFromCurrent();
+
+        init = true;
+
+        glfwSetCallback(window, windowSizeCallback = new GLFWWindowSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                resize(width, height);
+            }
+        });
+
+    }
+
+    public void makeContextCurrent() {
+        glfwMakeContextCurrent(window);
+    }
+
+    public void createContextFromCurrent() {
+        GLContext.createFromCurrent();
+    }
+
+    public void setVSync(boolean vsync) {
+        if (vsync)
+            glfwSwapInterval(1);
+        else
+            glfwSwapInterval(0);
+    }
+
+    public void bindAsRenderTarget() {
+        glViewport(0, 0, getWidth(), getHeight());
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    public void close() {
+        glfwSetWindowShouldClose(window, 1);
+    }
+
+    public void clear(float r, float g, float b, float a) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(r, g, b, a);
+    }
+
+    public void resize(int width, int height) {
+        glViewport(0, 0, width, height);
+        Aero.activeScreen.resized(width, height);
+        Aero.graphics.initDisplay(width, height);
+    }
+
+    public void render() {
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    public void destroy() {
+        errorCallback.release();
+        windowSizeCallback.release();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+
+    public void minimize() {
+        glfwIconifyWindow(window);
+    }
+
+    public void restore() {
+        glfwRestoreWindow(window);
+    }
+
+    public void hide() {
+        glfwHideWindow(window);
+    }
+
+    public void show() {
+        glfwShowWindow(window);
+    }
+
+
+    public boolean isClosed() {
+        return glfwWindowShouldClose(window) != 0;
+    }
+
+    public void setSize(int width, int height) {
+        glfwSetWindowSize(window, width, height);
+    }
+
+    public Vector2 getSize() {
+        IntBuffer w = BufferUtils.createIntBuffer(4);
+        IntBuffer h = BufferUtils.createIntBuffer(4);
+        glfwGetWindowSize(window, w, h);
+
+        return new Vector2(w.get(0), h.get(0));
+    }
+
+    public int getWidth() {
+        return (int) getSize().x;
+    }
+
+    public int getHeight() {
+        return (int) getSize().y;
+    }
+
+    public void setPosition(int x, int y) {
+        glfwSetWindowPos(window, x, y);
+    }
+
+    /*private static PixelFormat pf = new PixelFormat();
 
     private static boolean once = false;
 
@@ -58,17 +202,8 @@ public class Window {
         Display.update();
     }
 
-    public static void sync() {
-        sync = true;
-    }
-
     public static void sync(int maxFps) {
-        sync = true;
-        Window.maxFps = maxFps;
-    }
-
-    public static void desync() {
-        sync = false;
+        Display.sync(maxFps);
     }
 
     public static void dispose() {
@@ -268,5 +403,5 @@ public class Window {
         }
 
         return null;
-    }
+    }*/
 }

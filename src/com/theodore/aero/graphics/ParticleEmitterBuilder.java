@@ -8,7 +8,6 @@ import com.theodore.aero.math.Vector3;
 public class ParticleEmitterBuilder {
 
     private Mesh mesh = new Mesh("rectangle");
-    //    private Mesh mesh = Mesh.get("rectangle");
     private Material material = new Material();
 
     private Vector3 gravity = new Vector3(0, -9f, 0);

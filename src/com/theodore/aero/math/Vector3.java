@@ -109,11 +109,6 @@ public class Vector3 {
         return this.sub(normal.mul(this.dot(normal)).mul(2));
     }
 
-    /*inline Vector<T,D> Reflect(const Vector<T,D>& normal) const
-    {
-        return *this - (normal * (this->Dot(normal) * 2));
-    }*/
-
     public Vector3 rotate(float angle, Vector3 axis) {
         return this.cross(axis.mul((float) Math.sin(Math.toRadians(-angle)))).add(this.mul((float) Math.cos(Math.toRadians(-angle))));
     }
@@ -134,6 +129,13 @@ public class Vector3 {
         return dest.sub(this).mul(lerpFactor).add(this);
     }
 
+    public Vector3 prj(final Matrix4 matrix) {
+        final float l_mat[][] = matrix.getMatrix();
+        final float l_w = 1f / (x * l_mat[3][0] + y * l_mat[3][1] + z * l_mat[3][2] + l_mat[3][3]);
+        return this.set((x * l_mat[0][0] + y * l_mat[0][1] + z * l_mat[0][2] + l_mat[0][3]) * l_w, (x
+                * l_mat[1][0] + y * l_mat[1][1] + z * l_mat[1][2] + l_mat[1][3])
+                * l_w, (x * l_mat[2][0] + y * l_mat[2][1] + z * l_mat[2][2] + l_mat[2][3]) * l_w);
+    }
 
     public Vector3 approach(Vector3 goal, float delta) {
         Vector3 current = new Vector3(x, y, z);

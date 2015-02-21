@@ -1,6 +1,5 @@
 package com.theodore.aero.physics;
 
-import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
 
 public abstract class Collider {
@@ -8,9 +7,7 @@ public abstract class Collider {
     public enum Type {
         SPHERE,
         AABB,
-        PLANE,
-
-        SIZE
+        PLANE
     }
 
     private Type type;
@@ -26,6 +23,12 @@ public abstract class Collider {
             return self.intersectBoundingSphere((BoundingSphere) other);
         }
 
+        if (type == Type.AABB && other.getType() == Type.AABB) {
+            AABB self = (AABB) this;
+
+            return self.intersectAABB((AABB) other);
+        }
+
         System.out.println("Error in physics engine, collisions not yet implemented between specified colliders!");
 
         return new IntersectData(false, new Vector3(0, 0, 0));
@@ -35,6 +38,10 @@ public abstract class Collider {
 
     public Vector3 getPosition() {
         return new Vector3(0, 0, 0);
+    }
+
+    public void setPosition(Vector3 position) {
+
     }
 
     public Type getType() {

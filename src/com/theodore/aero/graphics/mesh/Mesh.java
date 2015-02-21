@@ -1,12 +1,15 @@
 package com.theodore.aero.graphics.mesh;
 
+import com.theodore.aero.components.Camera;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.graphics.mesh.meshLoading.IndexedModel;
 import com.theodore.aero.graphics.mesh.meshLoading.OBJModel;
-import com.theodore.aero.resourceManagement.MeshResource;
+import com.theodore.aero.resources.MeshResource;
 
 import java.io.File;
 import java.util.HashMap;
+
+import static org.lwjgl.opengl.GL11.*;
 
 public class Mesh {
 
@@ -56,7 +59,8 @@ public class Mesh {
     }
 
     @Override
-    protected void finalize() {
+    protected void finalize() throws Throwable {
+        super.finalize();
         if (resource.removeReference() && !name.isEmpty()) {
             loadedModels.remove(name);
         }
@@ -90,4 +94,11 @@ public class Mesh {
         loadedModels.put("sphere", loadMesh(Aero.files.internal("default/models/sphere.obj")));
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public MeshResource getResource() {
+        return resource;
+    }
 }

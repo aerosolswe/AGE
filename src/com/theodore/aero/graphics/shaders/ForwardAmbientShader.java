@@ -17,11 +17,18 @@ public class ForwardAmbientShader extends Shader {
 
         addUniform("diffuse");
 
+        addUniform("model");
         addUniform("MVP");
+        addUniform("viewProjectionMatrix");
+
         addUniform("ambientLight");
         addUniform("textureRepeat");
         addUniform("color");
         addUniform("alpha");
+
+        addUniform("density");
+        addUniform("gradient");
+        addUniform("skyColor");
     }
 
     @Override
@@ -31,11 +38,17 @@ public class ForwardAmbientShader extends Shader {
         Matrix4 worldMatrix = transform.getTransformation();
         Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
 
+        setUniform("model", worldMatrix);
         setUniform("MVP", MVPMatrix);
+        setUniform("viewProjectionMatrix", graphics.getMainCamera().getViewProjection());
         setUniformi("textureRepeat", material.getInteger("textureRepeat"));
         setUniform("color", material.getVector3("color"));
         setUniformf("alpha", material.getFloat("alpha"));
         setUniform("ambientLight", graphics.getVector3("ambientLight"));
+
+        setUniformf("density", graphics.getFloat("fogDensity"));
+        setUniformf("gradient", graphics.getFloat("fogGradient"));
+        setUniform("skyColor", graphics.getVector3("skyColor"));
 
         setUniformi("diffuse", graphics.getSamplerSlot("diffuse"));
     }

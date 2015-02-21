@@ -23,31 +23,31 @@ public class Debug {
     private DecimalFormat format;
 
     public Debug() {
-        gui = new Gui(Window.getWidth(), Window.getHeight());
+        gui = new Gui(Aero.window.getWidth(), Aero.window.getHeight());
 
-        fpsLabel = new Label("Frames per seconds: 120", 10, Window.getHeight() - 20, 20, 20, 9);
-        renderTimeLabel = new Label("Render time: 0 ms", 10, fpsLabel.getY() - 18, 20, 20, 9);
-        syncTimeLabel = new Label("Sync time: 0 ms", 10, renderTimeLabel.getY() - 18, 20, 20, 9);
-        inputTimeLabel = new Label("Input time: 0 ms", 10, syncTimeLabel.getY() - 18, 20, 20, 9);
-        updateTimeLabel = new Label("Update time: 0 ms", 10, inputTimeLabel.getY() - 18, 20, 20, 9);
-        totalTimeLabel = new Label("Total time: 0 ms", 10, updateTimeLabel.getY() - 18, 20, 20, 9);
+        fpsLabel = new Label("Frames per seconds: 120", 17, Aero.window.getHeight() - 20, 10, 20, 10);
+        renderTimeLabel = new Label("Render time: 0 ms", 17, fpsLabel.getY() - 28, 10, 20, 10);
+        syncTimeLabel = new Label("Sync time: 0 ms", 17, renderTimeLabel.getY() - 18, 10, 20, 10);
+        inputTimeLabel = new Label("Input time: 0 ms", 17, syncTimeLabel.getY() - 18, 10, 20, 10);
+        updateTimeLabel = new Label("Update time: 0 ms", 17, inputTimeLabel.getY() - 18, 10, 20, 10);
+        totalTimeLabel = new Label("Total time: 0 ms", 17, updateTimeLabel.getY() - 18, 10, 20, 10);
 
         gui.addWidget(fpsLabel);
         gui.addWidget(renderTimeLabel);
         gui.addWidget(syncTimeLabel);
         gui.addWidget(inputTimeLabel);
         gui.addWidget(updateTimeLabel);
-        gui.addWidget(totalTimeLabel);
+//        gui.addWidget(totalTimeLabel);
 
         format = new DecimalFormat("0.0000");
     }
 
     public void input(float delta) {
-        if (Aero.input.getKeyDown(Input.KEY_F12)) {
+        if (Aero.input.getKey(Input.Keys.KEY_F12) == Input.Actions.PRESS) {
             gui.getParent().setVisible(!gui.getParent().isVisible());
         }
 
-        if (Aero.input.getKeyDown(Input.KEY_F11)) {
+        if (Aero.input.getKey(Input.Keys.KEY_F11) == Input.Actions.PRESS) {
             Aero.graphics.setBoolean("wireframe", !Aero.graphics.getBoolean("wireframe"));
         }
     }
@@ -63,7 +63,7 @@ public class Debug {
         gui.update(delta);
     }
 
-    public void render() {
+    public void draw() {
         gui.draw(Aero.graphics);
     }
 }

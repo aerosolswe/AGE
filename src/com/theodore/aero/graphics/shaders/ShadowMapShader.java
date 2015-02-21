@@ -21,8 +21,6 @@ public class ShadowMapShader extends Shader {
     public void updateUniforms(Transform transform, Material material, Graphics graphics) {
         super.updateUniforms(transform, material, graphics);
 
-        material.getTexture("diffuse").bind(graphics.getSamplerSlot("diffuse"));
-
         Matrix4 worldMatrix = transform.getTransformation();
         Matrix4 MVPMatrix = graphics.getMainCamera().getViewProjection().mul(worldMatrix);
 

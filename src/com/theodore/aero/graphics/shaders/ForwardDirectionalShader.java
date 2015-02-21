@@ -21,24 +21,46 @@ public class ForwardDirectionalShader extends Shader {
 
         addUniform("model");
         addUniform("MVP");
+        addUniform("viewProjectionMatrix");
         addUniform("lightMatrix");
+
+        addUniform("blendMap");
+        addUniform("shadowMap");
 
         addUniform("diffuse");
         addUniform("normalMap");
+        addUniform("specularMap");
         addUniform("dispMap");
-        addUniform("shadowMap");
+
+        addUniform("rdiffuse");
+        addUniform("rnormalMap");
+        addUniform("rspecularMap");
+        addUniform("rdispMap");
+
+        addUniform("gdiffuse");
+        addUniform("gnormalMap");
+        addUniform("gspecularMap");
+        addUniform("gdispMap");
+
+        addUniform("bdiffuse");
+        addUniform("bspecularMap");
+        addUniform("bnormalMap");
+        addUniform("bdispMap");
 
         addUniform("shadowVarianceMin");
         addUniform("shadowLightBleedReduction");
 
         addUniform("textureRepeat");
 
-        addUniform("specularIntensity");
-        addUniform("specularPower");
+        addUniform("shininess");
         addUniform("scale");
         addUniform("bias");
         addUniform("color");
         addUniform("alpha");
+
+        addUniform("density");
+        addUniform("gradient");
+        addUniform("skyColor");
 
         addUniform("eyePos");
 
@@ -57,11 +79,11 @@ public class ForwardDirectionalShader extends Shader {
 
         setUniform("model", worldMatrix);
         setUniform("MVP", MVPMatrix);
+        setUniform("viewProjectionMatrix", graphics.getMainCamera().getViewProjection());
         setUniform("lightMatrix", lightMatrix);
 
         setUniform("color", material.getVector3("color"));
-        setUniformf("specularIntensity", material.getFloat("specularIntensity"));
-        setUniformf("specularPower", material.getFloat("specularPower"));
+        setUniformf("shininess", material.getFloat("shininess"));
         setUniformf("scale", material.getFloat("scale"));
         setUniformf("bias", material.getFloat("bias"));
         setUniformi("textureRepeat", material.getInteger("textureRepeat"));
@@ -70,10 +92,32 @@ public class ForwardDirectionalShader extends Shader {
         setUniformf("shadowVarianceMin", graphics.getFloat("shadowVarianceMin"));
         setUniformf("shadowLightBleedReduction", graphics.getFloat("shadowLightBleedReduction"));
 
+        setUniformf("density", graphics.getFloat("fogDensity"));
+        setUniformf("gradient", graphics.getFloat("fogGradient"));
+        setUniform("skyColor", graphics.getVector3("skyColor"));
+
+        setUniformi("blendMap", graphics.getSamplerSlot("blendMap"));
+        setUniformi("shadowMap", graphics.getSamplerSlot("shadowMap"));
+
         setUniformi("diffuse", graphics.getSamplerSlot("diffuse"));
         setUniformi("normalMap", graphics.getSamplerSlot("normalMap"));
         setUniformi("dispMap", graphics.getSamplerSlot("dispMap"));
-        setUniformi("shadowMap", graphics.getSamplerSlot("shadowMap"));
+        setUniformi("specularMap", graphics.getSamplerSlot("specularMap"));
+
+        setUniformi("rdiffuse", graphics.getSamplerSlot("rdiffuse"));
+        setUniformi("rnormalMap", graphics.getSamplerSlot("rnormalMap"));
+        setUniformi("rdispMap", graphics.getSamplerSlot("rdispMap"));
+        setUniformi("rspecularMap", graphics.getSamplerSlot("rspecularMap"));
+
+        setUniformi("gdiffuse", graphics.getSamplerSlot("gdiffuse"));
+        setUniformi("gnormalMap", graphics.getSamplerSlot("gnormalMap"));
+        setUniformi("gdispMap", graphics.getSamplerSlot("gdispMap"));
+        setUniformi("gspecularMap", graphics.getSamplerSlot("gspecularMap"));
+
+        setUniformi("bdiffuse", graphics.getSamplerSlot("bdiffuse"));
+        setUniformi("bnormalMap", graphics.getSamplerSlot("bnormalMap"));
+        setUniformi("bdispMap", graphics.getSamplerSlot("bdispMap"));
+        setUniformi("bspecularMap", graphics.getSamplerSlot("bspecularMap"));
 
         setUniformDirectionalLight("directionalLight", (DirectionalLight) graphics.getActiveLight());
     }

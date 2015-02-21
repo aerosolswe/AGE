@@ -2,8 +2,7 @@ package com.theodore.aero.graphics;
 
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.Util;
-import com.theodore.aero.resourceManagement.TextureResource;
-import org.lwjgl.BufferUtils;
+import com.theodore.aero.resources.TextureResource;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,6 +18,7 @@ import static org.lwjgl.opengl.GL13.*;
 public class Texture {
 
     public static final Texture WHITE_PIXEL = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF}).flip(), GL_TEXTURE_2D, GL_TEXTURE_2D, GL_LINEAR, GL_RGBA8, GL_RGBA, false, 0);
+    public static final Texture BLACK_PIXEL = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xFF}).flip(), GL_TEXTURE_2D, GL_TEXTURE_2D, GL_LINEAR, GL_RGBA8, GL_RGBA, false, 0);
     public static final Texture NORMAL_UP = new Texture(1, 1, (ByteBuffer) Util.createByteBuffer(4).put(new byte[]{(byte) 0x80, (byte) 0x7F, (byte) 0xFF, (byte) 0xFF}).flip(), GL_TEXTURE_2D, GL_TEXTURE_2D, GL_LINEAR, GL_RGBA8, GL_RGBA, false, 0);
 
     private static HashMap<String, TextureResource> loadedTextures = new HashMap<String, TextureResource>();
@@ -35,7 +35,7 @@ public class Texture {
         resource = new TextureResource(id, width, height, data, sideTarget, textureTarget, filters, internalFormat, format, clamp, attachment);
     }
 
-    public Texture(File[] files){
+    public Texture(File[] files) {
         this.name = "";
 
         id = generateId();
@@ -123,7 +123,7 @@ public class Texture {
         return null;
     }
 
-    private static int generateId(){
+    private static int generateId() {
         return glGenTextures();
     }
 
@@ -133,7 +133,8 @@ public class Texture {
     }
 
     @Override
-    protected void finalize() {
+    protected void finalize() throws Throwable {
+        super.finalize();
         if (resource.removeReference() && !name.isEmpty()) {
             loadedTextures.remove(name);
         }
@@ -146,7 +147,7 @@ public class Texture {
     public void bind(int samplerSlot) {
         assert (samplerSlot >= 0 && samplerSlot <= 31);
         glActiveTexture(GL_TEXTURE0 + samplerSlot);
-        if(resource != null)
+        if (resource != null)
             glBindTexture(GL_TEXTURE_2D, resource.getId());
         else
             glBindTexture(GL_TEXTURE_2D, id);

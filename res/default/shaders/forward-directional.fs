@@ -16,4 +16,5 @@ void main(){
        discard;
 
     fragColor = vec4(color, alpha) * calcTextureColor() * lightingAmount;
+    fragColor = calcFog(fragColor);
 }

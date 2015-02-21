@@ -25,6 +25,12 @@ public class Transform {
         parentMatrix = new Matrix4().initIdentity();
     }
 
+    public Transform(Vector3 position, Quaternion rotation, Vector3 scale) {
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+    }
+
     public void update() {
         if (oldPosition != null) {
             oldPosition.set(position);

@@ -12,7 +12,7 @@ import com.theodore.aero.graphics.shaders.*;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Quaternion;
 import com.theodore.aero.math.Vector3;
-import com.theodore.aero.resourceManagement.MappedValues;
+import com.theodore.aero.resources.MappedValues;
 import org.lwjgl.opengl.GL30;
 
 import java.nio.ByteBuffer;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL32.*;
 
 public class Graphics extends MappedValues {
 
@@ -35,12 +35,11 @@ public class Graphics extends MappedValues {
     private ProfileTimer renderTimer;
     private ProfileTimer syncTimer;
 
-
     /**
-     * Contains all the light sources
+     * Contains all the light sources / filers / samplers
      */
-    private ArrayList<Filter> filters;
     private ArrayList<BaseLight> lights;
+    private ArrayList<Filter> filters;
     private HashMap<String, Integer> samplerMap;
 
     /**
@@ -79,8 +78,26 @@ public class Graphics extends MappedValues {
 
         samplerMap.put("diffuse", 0);
         samplerMap.put("normalMap", 1);
-        samplerMap.put("dispMap", 2);
-        samplerMap.put("shadowMap", 3);
+        samplerMap.put("specularMap", 2);
+        samplerMap.put("dispMap", 3);
+
+        samplerMap.put("rdiffuse", 4);
+        samplerMap.put("rnormalMap", 5);
+        samplerMap.put("rspecularMap", 6);
+        samplerMap.put("rdispMap", 7);
+
+        samplerMap.put("gdiffuse", 8);
+        samplerMap.put("gnormalMap", 9);
+        samplerMap.put("gspecularMap", 10);
+        samplerMap.put("gdispMap", 11);
+
+        samplerMap.put("bdiffuse", 12);
+        samplerMap.put("bnormalMap", 13);
+        samplerMap.put("bspecularMap", 14);
+        samplerMap.put("bdispMap", 15);
+
+        samplerMap.put("shadowMap", 16);
+        samplerMap.put("blendMap", 17);
 
         ambientShader = new ForwardAmbientShader();
         shadowMapShader = new ShadowMapShader();
@@ -91,7 +108,10 @@ public class Graphics extends MappedValues {
         setMatrix4("lightMatrix", new Matrix4().initScale(0, 0, 0));
         setMatrix4("biasMatrix", new Matrix4().initScale(0.5f, 0.5f, 0.5f).mul(new Matrix4().initTranslation(1.0f, 1.0f, 1.0f)));
 
-        setVector3("ambientLight", new Vector3(0.08f, 0.09f, 0.1f));
+        setVector3("ambientLight", new Vector3(0.1f, 0.1f, 0.1f).mul(2f));
+        setVector3("skyColor", new Vector3(0.39f, 0.58f, 0.92f)); // 100, 149, 237
+        setFloat("fogDensity", 0.000f); // 0.007
+        setFloat("fogGradient", 1.5f);
 
         setBoolean("wireframe", false);
         setInteger("fps", 60);
@@ -99,11 +119,10 @@ public class Graphics extends MappedValues {
         renderTimer = new ProfileTimer();
         syncTimer = new ProfileTimer();
 
-        initDisplay(Window.getWidth(), Window.getHeight());
+        initDisplay(Aero.window.getWidth(), Aero.window.getHeight());
 
         altCamera = new Camera(new Matrix4().initIdentity());
         new GameObject().addComponent(altCamera);
-
     }
 
     public void fullRender(GameObject object) {
@@ -142,14 +161,14 @@ public class Graphics extends MappedValues {
         if (filters.size() != 0)
             getTexture("displayTexture").bindAsRenderTarget();
         else
-            Window.bindAsRenderTarget();
+            Aero.window.bindAsRenderTarget();
 
-        Aero.graphicsUtil.setClearColor(0.0f, 0f, 0f, 0f);
+        Aero.graphicsUtil.setClearColor(0.39f, 0.58f, 0.92f, 0f);
         Aero.graphicsUtil.clearColorAndDepth();
 
         if (getBoolean("wireframe")) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        object.renderAll(ambientShader, this);
+        object.renderAllBasic(ambientShader, this);
 
         if (getBoolean("wireframe")) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -162,14 +181,14 @@ public class Graphics extends MappedValues {
         if (filters.size() != 0)
             getTexture("displayTexture").bindAsRenderTarget();
         else
-            Window.bindAsRenderTarget();
+            Aero.window.bindAsRenderTarget();
 
-        Aero.graphicsUtil.setClearColor(0.0f, 0.0f, 0.0f, 0f);
+        Aero.graphicsUtil.setClearColor(0.39f, 0.58f, 0.92f, 0f);
         Aero.graphicsUtil.clearColorAndDeptAndStencil();
 
         if (getBoolean("wireframe")) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        object.renderAll(ambientShader, this);
+        object.renderAllBasic(ambientShader, this);
 
         if (getBoolean("wireframe")) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -210,7 +229,7 @@ public class Graphics extends MappedValues {
                 if (flipFaces) Aero.graphicsUtil.enableCullFace(GL_FRONT);
 
                 Aero.graphicsUtil.setDepthClamp(true);
-                object.renderAll(shadowMapShader, this);
+                object.renderAllShadow(shadowMapShader, this);
                 Aero.graphicsUtil.setDepthClamp(false);
 
                 if (flipFaces) Aero.graphicsUtil.enableCullFace(GL_BACK);
@@ -238,14 +257,18 @@ public class Graphics extends MappedValues {
             if (filters.size() != 0)
                 getTexture("displayTexture").bindAsRenderTarget();
             else
-                Window.bindAsRenderTarget();
+                Aero.window.bindAsRenderTarget();
 
 
             Aero.graphicsUtil.enableBlending(GL_ONE, GL_ONE);
             Aero.graphicsUtil.setDepthMask(false);
             Aero.graphicsUtil.setDepthFunc(GL_EQUAL);
 
-            object.renderAll(activeLight.getShader(), this);
+            if (getBoolean("wireframe")) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+            object.renderAllLight(activeLight.getShader(), this);
+
+            if (getBoolean("wireframe")) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             Aero.graphicsUtil.setDepthFunc(GL_LESS);
             Aero.graphicsUtil.setDepthMask(true);
@@ -313,4 +336,7 @@ public class Graphics extends MappedValues {
         return samplerMap.get(samplerName);
     }
 
+    public ArrayList<Filter> getFilters() {
+        return filters;
+    }
 }

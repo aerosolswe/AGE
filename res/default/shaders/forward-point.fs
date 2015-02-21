@@ -17,4 +17,5 @@ void main(){
 
     fragColor = vec4(color, alpha) * calcTextureColor() *
                 (calcPointLight(pointLight, normalize(calcNormal())) * calcShadowFactor(lightDirection));
+    fragColor = calcFog(fragColor);
 }

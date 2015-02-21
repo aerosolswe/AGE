@@ -16,7 +16,7 @@ public class FreeMove extends GameComponent {
     private int walkKey;
 
     public FreeMove(float speed) {
-        this(speed, Input.KEY_W, Input.KEY_S, Input.KEY_A, Input.KEY_D, Input.KEY_SPACE, Input.KEY_LCONTROL, Input.KEY_LSHIFT);
+        this(speed, Input.Keys.KEY_W, Input.Keys.KEY_S, Input.Keys.KEY_A, Input.Keys.KEY_D, Input.Keys.KEY_SPACE, Input.Keys.KEY_LEFT_CONTROL, Input.Keys.KEY_LEFT_SHIFT);
     }
 
     public FreeMove(float speed, int forwardKey, int backKey, int leftKey, int rightKey, int upKey, int downKey, int walkKey) {
@@ -34,23 +34,23 @@ public class FreeMove extends GameComponent {
     public void input(float delta) {
         float movAmt;
 
-        if (Aero.input.getKey(walkKey))
+        if (Aero.input.getKey(walkKey) == Input.Actions.PRESS)
             movAmt = (speed / 3) * delta;
         else
             movAmt = speed * delta;
 
 
-        if (Aero.input.getKey(forwardKey))
+        if (Aero.input.getKey(forwardKey) == Input.Actions.PRESS)
             move(getTransform().getRotation().getForward(), movAmt);
-        if (Aero.input.getKey(backKey))
+        if (Aero.input.getKey(backKey) == Input.Actions.PRESS)
             move(getTransform().getRotation().getForward(), -movAmt);
-        if (Aero.input.getKey(leftKey))
+        if (Aero.input.getKey(leftKey) == Input.Actions.PRESS)
             move(getTransform().getRotation().getLeft(), movAmt);
-        if (Aero.input.getKey(rightKey))
+        if (Aero.input.getKey(rightKey) == Input.Actions.PRESS)
             move(getTransform().getRotation().getRight(), movAmt);
-        if (Aero.input.getKey(upKey))
+        if (Aero.input.getKey(upKey) == Input.Actions.PRESS)
             move(new Vector3(0, 1, 0), movAmt);
-        if (Aero.input.getKey(downKey))
+        if (Aero.input.getKey(downKey) == Input.Actions.PRESS)
             move(new Vector3(0, 1, 0), -movAmt);
     }
 

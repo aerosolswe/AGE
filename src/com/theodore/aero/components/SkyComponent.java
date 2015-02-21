@@ -9,15 +9,16 @@ public class SkyComponent extends GameComponent {
 
     private Sky sky;
 
-    public SkyComponent(Sky sky){
+    public SkyComponent(Sky sky) {
         this.sky = sky;
     }
 
     @Override
-    public void render(Shader shader, Graphics graphics) {
-        super.render(shader, graphics);
+    public void renderBasic(Shader shader, Graphics graphics) {
+        super.renderBasic(shader, graphics);
 
         sky.render(graphics);
 
     }
+
 }

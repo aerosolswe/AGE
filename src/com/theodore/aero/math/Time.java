@@ -8,7 +8,7 @@ public class Time {
     }
 
     public static double getDoubleTime() {
-        return (double)System.nanoTime() / (double)SECOND;
+        return (double) System.nanoTime() / (double) SECOND;
     }
 
 }

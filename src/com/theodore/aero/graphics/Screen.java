@@ -35,6 +35,10 @@ public abstract class Screen {
         updateTimer.stopInvocation();
     }
 
+    public void dispose() {
+
+    }
+
     public void render(Graphics graphics) {
         graphics.fullRender(getRootGameObject());
     }
@@ -47,6 +51,7 @@ public abstract class Screen {
     }
 
     public void removeObject(GameObject object) {
+        object.getAllAttached().clear();
         getRootGameObject().removeChild(object);
     }
 

@@ -4,6 +4,10 @@ import com.theodore.aero.math.Vector3;
 
 public class Attenuation extends Vector3 {
 
+    public Attenuation() {
+        this(0, 0, 2);
+    }
+
     public Attenuation(float constant, float linear, float exponent) {
         super(constant, linear, exponent);
     }

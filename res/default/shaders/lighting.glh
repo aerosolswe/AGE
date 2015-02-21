@@ -1,20 +1,45 @@
 in vec2 texCoord0;
+in vec2 texCoordUnModified;
 in vec3 normal0;
 in vec3 worldPos0;
 in mat3 tbnMatrix0;
 in vec4 shadowMapCoords0;
+in float visibility;
 
 uniform vec3 eyePos;
+uniform vec3 color;
+uniform vec3 skyColor;
+
+uniform sampler2D blendMap;
+
 uniform sampler2D diffuse;
 uniform sampler2D normalMap;
+uniform sampler2D specularMap;
 uniform sampler2D dispMap;
 
-uniform float specularIntensity;
-uniform float specularPower;
+uniform sampler2D rdiffuse;
+uniform sampler2D rnormalMap;
+uniform sampler2D rspecularMap;
+uniform sampler2D rdispMap;
+
+uniform sampler2D gdiffuse;
+uniform sampler2D gnormalMap;
+uniform sampler2D gspecularMap;
+uniform sampler2D gdispMap;
+
+uniform sampler2D bdiffuse;
+uniform sampler2D bnormalMap;
+uniform sampler2D bspecularMap;
+uniform sampler2D bdispMap;
+
+uniform float shininess;
 uniform float scale;
 uniform float bias;
 uniform float alpha;
-uniform vec3 color;
+
+uniform int textureRepeat;
+
+uniform float density;
 
 uniform sampler2D shadowMap;
 uniform samplerCube cubeShadowMap;
@@ -60,26 +85,38 @@ void init(vec3 wp, vec2 tc, mat3 m){
     tbnMatrix = m;
 }
 
+vec4 calcFog(vec4 fragColor){
+    vec4 outColor = fragColor;
+    outColor = mix(vec4(skyColor, 1.0), outColor, visibility);
+
+    return outColor;
+}
+
 vec4 calcLight(BaseLight base, vec3 direction, vec3 normal){
     float diffuseFactor = dot(normal, -direction);
 
     vec4 diffuseColor = vec4(0,0,0,0);
     vec4 specularColor = vec4(0,0,0,0);
 
-    if(diffuseFactor > 0)
-    {
+    if(diffuseFactor > 0){
         diffuseColor = vec4(base.color, 1.0) * base.intensity * diffuseFactor;
 
         vec3 directionToEye = normalize(eyePos - worldPos);
         vec3 reflectDirection = normalize(reflect(direction, normal));
 
-        float specularFactor = dot(directionToEye, reflectDirection);
-        specularFactor = pow(specularFactor, specularPower);
+        float specularFactor = pow(max(dot(directionToEye, reflectDirection), 0.0), shininess);
 
-        if(specularFactor > 0)
-        {
-            specularColor = vec4(base.color, 1.0) * specularIntensity * specularFactor;
-        }
+        vec4 spec = vec4(texture(specularMap, textureCoords));
+        vec4 rspec = vec4(texture(rspecularMap, textureCoords));
+        vec4 gspec = vec4(texture(gspecularMap, textureCoords));
+        vec4 bspec = vec4(texture(bspecularMap, textureCoords));
+
+        vec4 alpha = texture(blendMap, texCoordUnModified);
+        spec = mix(spec, rspec, alpha[0]);
+        spec = mix(spec, gspec, alpha[1]);
+        spec = mix(spec, bspec, alpha[2]);
+
+        specularColor = vec4(base.color, 1.0) * specularFactor * spec;
     }
 
     return diffuseColor + specularColor;
@@ -122,30 +159,45 @@ vec4 calcDirectionalLight(DirectionalLight directionalLight, vec3 normal){
     return calcLight(directionalLight.base, -directionalLight.direction, normal);
 }
 
-vec2 calcTextureCoords(){
+vec2 calcTextureCoords(sampler2D displacementMap){
     vec2 texCoords = textureCoords.xy + ((normalize(eyePos - worldPos) * tbnMatrix).xy *
-                                (texture(dispMap, textureCoords.xy).r * scale + bias));
+                                (texture(displacementMap, textureCoords.xy).r * scale + bias));
 
     return texCoords;
 }
 
 vec4 calcTextureColor(){
-    vec4 textureColor = texture(diffuse, calcTextureCoords());
+//    vec4 textureColor = texture(diffuse, calcTextureCoords(dispMap));
 
-    if(textureColor.a < 0.5)
+    vec4 alpha = texture(blendMap, texCoordUnModified);
+    vec4 totalColor = texture(diffuse, calcTextureCoords(dispMap));
+    totalColor = mix(totalColor, texture(rdiffuse, calcTextureCoords(rdispMap)), alpha[0]);
+    totalColor = mix(totalColor, texture(gdiffuse, calcTextureCoords(gdispMap)), alpha[1]);
+    totalColor = mix(totalColor, texture(bdiffuse, calcTextureCoords(bdispMap)), alpha[2]);
+
+   if(totalColor.a < 0.5)
        discard;
 
-    return textureColor;
+//    return textureColor;
+    return totalColor;
 }
 
 vec3 calcNormal(){
-    vec3 normal = normalize(tbnMatrix * (2.0 * texture(normalMap, calcTextureCoords()).xyz - 1.0));
+    vec4 alpha = texture(blendMap, texCoordUnModified);
+    vec3 normal = normalize(tbnMatrix * (2.0 * texture(normalMap, calcTextureCoords(dispMap)).xyz - 1.0));
+    vec3 rnormal = normalize(tbnMatrix * (2.0 * texture(rnormalMap, calcTextureCoords(rdispMap)).xyz - 1.0));
+    vec3 gnormal = normalize(tbnMatrix * (2.0 * texture(gnormalMap, calcTextureCoords(gdispMap)).xyz - 1.0));
+    vec3 bnormal = normalize(tbnMatrix * (2.0 * texture(bnormalMap, calcTextureCoords(bdispMap)).xyz - 1.0));
 
-    return normal;
+    normal = mix(normal, rnormal, alpha[0]);
+    normal = mix(normal, gnormal, alpha[1]);
+    normal = mix(normal, bnormal, alpha[2]);
+
+    return normal.xyz;
 }
 
 float sampleShadowMap(sampler2D shadowMap, vec2 coords, float compare){
-    return step(compare, texture2D(shadowMap, coords.xy).r);
+    return step(compare, texture(shadowMap, coords.xy).r);
 }
 
 float sampleShadowMapLinear(sampler2D shadowMap, vec2 coords, float compare, vec2 texelSize){
@@ -190,7 +242,7 @@ bool inRange(float value){
 }
 
 float sampleVarianceShadowMap(sampler2D shadowMap, vec2 coords, float compare, float varianceMin, float lightBleedReductionAmount){
-    vec2 moments = texture2D(shadowMap, coords.xy).xy;
+    vec2 moments = texture(shadowMap, coords.xy).xy;
     float p = step(compare, moments.x);
     float variance = max(moments.y - moments.x * moments.x, varianceMin);
 

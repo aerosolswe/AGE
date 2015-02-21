@@ -15,7 +15,13 @@ public class GameComponent {
     public void update(float delta) {
     }
 
-    public void render(Shader shader, Graphics graphics) {
+    public void renderBasic(Shader shader, Graphics graphics) {
+    }
+
+    public void renderShadow(Shader shader, Graphics graphics) {
+    }
+
+    public void renderLight(Shader shader, Graphics graphics) {
     }
 
     public void setParent(GameObject parent) {

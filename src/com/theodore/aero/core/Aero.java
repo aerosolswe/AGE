@@ -1,31 +1,33 @@
 package com.theodore.aero.core;
 
 import com.theodore.aero.graphics.*;
-import com.theodore.aero.math.Time;
-import org.lwjgl.LWJGLException;
+import com.theodore.aero.input.InputManager;
+import org.lwjgl.LWJGLUtil;
 import org.lwjgl.Sys;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class Aero {
 
+    public static Window window;
     public static Graphics graphics;
     public static Input input;
+    public static InputManager inputManager;
     public static GraphicsUtil graphicsUtil;
     public static Files files;
     public static Screen activeScreen;
 
     private boolean running = false;
     private double frameTime;
-
-    long lastFrame;
-
-    /** frames per second */
-    int fps;
-    /** last fps time */
-    long lastFPS;
-    int targetFPS;
+    private int frameRate;
 
     public static double renderTime = 0;
     public static double syncTime = 0;
@@ -33,34 +35,42 @@ public class Aero {
     public static double updateTime = 0;
     public static double totalTime = 0;
 
-    public Aero(int width, int height, String title, int frameRate, boolean fullscreen, boolean vSync) {
-        Window.setIcon(new File("res/default/textures/logo.png"));
-        try {
-            Window.createWindow(width, height, title, fullscreen, vSync);
-        } catch (LWJGLException e) {
-            e.printStackTrace();
-        }
+    //
 
-        init(frameRate);
+    /** Instead of manually changing natives -Djava.library.path=native/os/x64-86 */
+    static {
+        System.setProperty("org.lwjgl.librarypath", (new File(new File(System.getProperty("user.dir"), "native"), LWJGLUtil.getPlatformName() + File.separator + "x" + System.getProperty("sun.arch.data.model"))).getAbsolutePath());
     }
 
-    private void init(int frameRate) {
-        int fr = frameRate;
-        if (fr > 2000 || fr <= 25) {
-            fr = 2000;
+
+    public Aero(String title, int width, int height, int frameRate, boolean fullscreen, boolean vsync, int samples) {
+        window = new Window(title, width, height, fullscreen, vsync, samples);
+        this.frameRate = frameRate;
+
+        if (vsync) {
+            ByteBuffer vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            int hz = GLFWvidmode.refreshRate(vidmode);
+            frameTime = 1.0f / hz;
+            this.frameRate = hz;
+        } else {
+            frameTime = 1.0f / frameRate;
         }
 
-        this.frameTime = 1.0 / fr;
+        init();
+    }
 
-        targetFPS = fr;
+    private void init() {
 
         Aero.graphicsUtil = new GraphicsUtil();
         Aero.graphics = new Graphics();
         Aero.input = new Input();
+        Aero.inputManager = new InputManager();
         Aero.files = new Files();
 
         graphics.initGraphics();
         graphics.init();
+
+
     }
 
     public void start(Screen game) {
@@ -81,8 +91,10 @@ public class Aero {
 
     public void run() {
         running = true;
+        window.makeContextCurrent();
+        window.createContextFromCurrent();
 
-        double lastTime = Time.getDoubleTime();
+        double lastTime = glfwGetTime();
         double frameCounter = 0;
         double unprocessedTime = 0;
         int frames = 0;
@@ -90,7 +102,7 @@ public class Aero {
         while (running) {
             boolean render = false;
 
-            double startTime = Time.getDoubleTime();
+            double startTime = glfwGetTime();
             double passedTime = startTime - lastTime;
             lastTime = startTime;
 
@@ -111,19 +123,13 @@ public class Aero {
             }
 
             while (unprocessedTime > frameTime) {
-                Window.update();
-
-                if (Window.isCloseRequested())
+                if (window.isClosed())
                     stop();
-
 
                 activeScreen.input((float) frameTime);
                 activeScreen.update((float) frameTime);
-
-                if (Aero.input.getKey(Input.KEY_LALT) && Aero.input.getKeyDown(Input.KEY_RETURN))
-                    Window.setDisplayMode(Window.getWidth(), Window.getHeight(), !Window.isFullscreen());
-
-                input.update();
+                inputManager.update();
+                graphics.setFloat("delta", (float) frameTime);
 
                 render = true;
 
@@ -132,8 +138,14 @@ public class Aero {
 
             if (render) {
                 activeScreen.render(graphics);
-                Window.render();
+                window.render();
                 frames++;
+            } else {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -141,11 +153,9 @@ public class Aero {
     }
 
     private void dispose() {
-        Window.dispose();
-    }
-
-    public static void setIcon(File file) {
-        Window.setIcon(file);
+        activeScreen.dispose();
+        inputManager.dispose();
+        window.destroy();
     }
 
     public static Screen getActiveScreen() {

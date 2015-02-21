@@ -2,41 +2,36 @@ package com.theodore.aero.physics;
 
 import com.theodore.aero.math.Vector3;
 
-public class AABB {
+public class AABB extends Collider {
 
-    private Vector3 minExtents;
-    private Vector3 maxExtents;
+    public Vector3 minExtents;
+    public Vector3 maxExtents;
+    public Vector3 center;
 
-    public AABB(Vector3 minExtents, Vector3 maxExtents) {
+    public AABB(Vector3 position, Vector3 minExtents, Vector3 maxExtents) {
+        super(Type.AABB);
         this.minExtents = minExtents;
         this.maxExtents = maxExtents;
+        this.center = position;
     }
 
     public IntersectData intersectAABB(AABB other) {
-        Vector3 distance0 = other.getMinExtents().sub(maxExtents);
-        Vector3 distance1 = minExtents.sub(other.maxExtents);
+        Vector3 distance0 = other.minExtents.add(other.center).sub(maxExtents.add(center));
+        Vector3 distance1 = minExtents.add(center).sub(other.maxExtents.add(other.center));
         Vector3 distance = distance0.max(distance1);
 
         float maxDistance = distance.max();
 
-        boolean collison = maxDistance < 0;
-
-        return new IntersectData(collison, distance);
+        return new IntersectData(maxDistance < 0, distance);
     }
 
-    public Vector3 getMinExtents() {
-        return minExtents;
+    @Override
+    public void transform(Vector3 translation) {
+        center.add(translation);
     }
 
-    public void setMinExtents(Vector3 minExtents) {
-        this.minExtents = minExtents;
-    }
-
-    public Vector3 getMaxExtents() {
-        return maxExtents;
-    }
-
-    public void setMaxExtents(Vector3 maxExtents) {
-        this.maxExtents = maxExtents;
+    @Override
+    public Vector3 getPosition() {
+        return center;
     }
 }

@@ -1,6 +1,5 @@
 package com.theodore.aero.core;
 
-import com.theodore.aero.graphics.Vertex;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector2;
 import com.theodore.aero.math.Vector3;
@@ -26,17 +25,6 @@ public class Util {
 
     public static ByteBuffer createByteBuffer(int size) {
         return BufferUtils.createByteBuffer(size);
-    }
-
-    public static FloatBuffer createFlippedBuffer(Vertex[] vertices) {
-        FloatBuffer buffer = createFloatBuffer(vertices.length * Vertex.SIZE);
-
-        for (int i = 0; i < vertices.length; i++)
-            vertices[i].addToBuffer(buffer);
-
-        buffer.flip();
-
-        return buffer;
     }
 
     public static IntBuffer createFlippedBuffer(int... values) {
@@ -94,6 +82,18 @@ public class Util {
         return buffer;
     }
 
+    public static FloatBuffer createFlippedBuffer(Matrix4 value) {
+        FloatBuffer buffer = createFloatBuffer(4 * 4);
+
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                buffer.put(value.get(i, j));
+
+        buffer.flip();
+
+        return buffer;
+    }
+
     public static ByteBuffer createFlippedBuffer(byte... values) {
         ByteBuffer buffer = createByteBuffer(values.length);
         buffer.put(values);
@@ -102,13 +102,11 @@ public class Util {
         return buffer;
     }
 
-    public static FloatBuffer createFlippedBuffer(Matrix4 value) {
-        FloatBuffer buffer = createFloatBuffer(4 * 4);
-
-        for (int i = 0; i < 4; i++)
-            for (int j = 0; j < 4; j++)
-                buffer.put(value.get(i, j));
-
+    public static ByteBuffer createFlippedByteBuffer(int... values) {
+        ByteBuffer buffer = createByteBuffer(values.length * 4);
+        for (int i = 0; i < values.length; i++) {
+            buffer.putInt(values[i]);
+        }
         buffer.flip();
 
         return buffer;

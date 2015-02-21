@@ -11,5 +11,6 @@ void main(){
     if(texel.a < 0.5)
        discard;
 
-    fragColor = vec4(color, alpha) * texture2D(diffuse, texCoord0.xy) * vec4(ambientLight, 1);
+    fragColor = vec4(color, alpha) * texture(diffuse, texCoord0.xy) * vec4(ambientLight, 1);
+    fragColor = calcFog(fragColor);
 }

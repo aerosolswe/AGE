@@ -10,8 +10,10 @@ import com.theodore.aero.graphics.Graphics;
 import com.theodore.aero.graphics.g3d.Material;
 import com.theodore.aero.math.Matrix4;
 import com.theodore.aero.math.Vector3;
-import com.theodore.aero.resourceManagement.ShaderResource;
+import com.theodore.aero.resources.ShaderResource;
+import org.lwjgl.BufferUtils;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -23,6 +25,8 @@ public class Shader {
 
     private ShaderResource resource;
     private String fileName;
+
+    private FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
 
     public Shader(String fileName) {
         this.fileName = fileName;
@@ -62,6 +66,10 @@ public class Shader {
         glUseProgram(resource.program);
     }
 
+    public void unbind() {
+        glUseProgram(0);
+    }
+
     public void updateUniforms(Transform transform, Material material, Graphics graphics) {
 
     }
@@ -82,7 +90,8 @@ public class Shader {
     }
 
     public void setUniform(String uniformName, Matrix4 value) {
-        glUniformMatrix4(resource.uniforms.get(uniformName), true, Util.createFlippedBuffer(value));
+        buffer = Util.createFlippedBuffer(value);
+        glUniformMatrix4(resource.uniforms.get(uniformName), true, buffer);
     }
 
     public void setUniformBaseLight(String uniformName, BaseLight baseLight) {

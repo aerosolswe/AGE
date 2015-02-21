@@ -11,8 +11,6 @@ public class GameObject {
     private ArrayList<GameObject> children;
     private ArrayList<GameComponent> components;
     private Transform transform;
-    private boolean renderLights = true;
-    private boolean renderShadows = true;
 
     public GameObject() {
         children = new ArrayList<GameObject>();
@@ -26,11 +24,11 @@ public class GameObject {
         child.getTransform().setParent(transform);
     }
 
-    public void removeChild(GameObject child){
+    public void removeChild(GameObject child) {
         children.remove(child);
     }
 
-    public void removeChild(int index){
+    public void removeChild(int index) {
         children.remove(index);
     }
 
@@ -67,11 +65,25 @@ public class GameObject {
             child.updateAll(delta);
     }
 
-    public void renderAll(Shader shader, Graphics graphics) {
-        render(shader, graphics);
+    public void renderAllBasic(Shader shader, Graphics graphics) {
+        renderBasic(shader, graphics);
 
         for (GameObject child : children)
-            child.renderAll(shader, graphics);
+            child.renderAllBasic(shader, graphics);
+    }
+
+    public void renderAllShadow(Shader shader, Graphics graphics) {
+        renderShadow(shader, graphics);
+
+        for (GameObject child : children)
+            child.renderAllShadow(shader, graphics);
+    }
+
+    public void renderAllLight(Shader shader, Graphics graphics) {
+        renderLight(shader, graphics);
+
+        for (GameObject child : children)
+            child.renderAllLight(shader, graphics);
     }
 
     public void input(float delta) {
@@ -86,9 +98,19 @@ public class GameObject {
             component.update(delta);
     }
 
-    public void render(Shader shader, Graphics graphics) {
+    public void renderBasic(Shader shader, Graphics graphics) {
         for (GameComponent component : components)
-            component.render(shader, graphics);
+            component.renderBasic(shader, graphics);
+    }
+
+    public void renderShadow(Shader shader, Graphics graphics) {
+        for (GameComponent component : components)
+            component.renderShadow(shader, graphics);
+    }
+
+    public void renderLight(Shader shader, Graphics graphics) {
+        for (GameComponent component : components)
+            component.renderLight(shader, graphics);
     }
 
     public ArrayList<GameObject> getAllAttached() {
@@ -111,21 +133,5 @@ public class GameObject {
 
         for (GameObject child : children)
             child.setEngine();
-    }
-
-    public boolean isRenderShadows() {
-        return renderShadows;
-    }
-
-    public void setRenderShadows(boolean renderShadows) {
-        this.renderShadows = renderShadows;
-    }
-
-    public boolean isRenderLights() {
-        return renderLights;
-    }
-
-    public void setRenderLights(boolean renderLights) {
-        this.renderLights = renderLights;
     }
 }

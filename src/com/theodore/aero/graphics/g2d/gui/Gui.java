@@ -4,7 +4,9 @@ import com.theodore.aero.components.Camera;
 import com.theodore.aero.core.Aero;
 import com.theodore.aero.core.GameObject;
 import com.theodore.aero.graphics.Graphics;
+import com.theodore.aero.input.MouseButtonCallback;
 import com.theodore.aero.math.Matrix4;
+import com.theodore.aero.math.Vector3;
 import org.lwjgl.opengl.GL11;
 
 
@@ -17,6 +19,10 @@ public class Gui {
     private int width;
     private int height;
 
+    public Gui() {
+        this(Aero.window.getWidth(), Aero.window.getHeight());
+    }
+
     public Gui(int width, int height) {
         this.width = width;
         this.height = height;
@@ -25,9 +31,11 @@ public class Gui {
         new GameObject().addComponent(camera);
 
         parent = new Node(0, 0, width, height);
+
     }
 
     public void update(float delta) {
+
         parent.update(delta);
     }
 
